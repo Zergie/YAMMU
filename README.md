@@ -1,5 +1,7 @@
-# MMU-Filament-Storage
-A filament storage for usage in MMU for example the Enraged Rabbit Carrot Feeder (ERCF) in the style of a voron printer.
+# Octo-Filament-Station
+"Eight Materials, Twin Drawers, One Enclosure."
+
+A filament drawer unit for usage with an MMU for example the Enraged Rabbit Carrot Feeder (ERCF) in the style of a voron printer.
 
 # BOM
 | Part Description   | Standard           | Qty |
