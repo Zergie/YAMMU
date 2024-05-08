@@ -68,3 +68,5 @@ Bore the hole out to 6.3mm with the included drill bit and install the M6 Helico
 by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident/blob/main/LICENSE)
 by Voron Design is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+- Parts from [Voron 2.4 Front Panel Handle, Hinge & Magnet Latch](https://www.printables.com/model/371692-voron-24-front-panel-handle-hinge-magnet-latch/files)
+by Jason_116929 is licensed under the Creative Commons - Attribution - Share Alike license.
