@@ -42,7 +42,7 @@ void ISR(uint32_t index) {
 uint32_t time_be1 = 0;
 void ISR_BE1() {
   uint32_t time = millis();
-  if (digitalRead(BE1) && time - time_be1 > BE_DEBOUNCE) {
+  if (time - time_be1 > BE_DEBOUNCE) {
     time_be1 = time;
   }
 }
