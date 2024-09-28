@@ -64,9 +64,13 @@ parts and voron mods are an alternative. For blind joints use M6x16 bolts and a 
 Bore the hole out to 6.3mm with the included drill bit and install the M6 Helicoli.
 
 # Used Open Source Parts
-- Parts from [Integrated Auto-Rewind Spool Holder](https://www.thingiverse.com/thing:3781815)
-by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident/blob/main/LICENSE)
 by Voron Design is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+- Parts from [Integrated Auto-Rewind Spool Holder](https://www.thingiverse.com/thing:3781815)
+by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Voron 2.4 Front Panel Handle, Hinge & Magnet Latch](https://www.printables.com/model/371692-voron-24-front-panel-handle-hinge-magnet-latch/files)
 by Jason_116929 is licensed under the Creative Commons - Attribution - Share Alike license.
+- Parts from [Kit for Removable Panels/Doors for Voron V2/Trident using Strong Snap Latch](https://www.printables.com/model/702768-kit-for-removable-panelsdoors-for-voron-v2trident-/files)
+by Victor Mateus Oliveira is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+- Parts from []()
+by #### is licensed under the ####.
