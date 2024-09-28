@@ -1,13 +1,19 @@
-# Octo-Filament-Station
+# Yet Another MMU
 "Eight Materials, Twin Drawers, One Enclosure."
 
-A filament drawer unit for usage with an MMU for example the Enraged Rabbit Carrot Feeder (ERCF) in the style of a voron printer.
+A Multi Material Unit (MMU) for eight filaments that can also function as a filament dryer and can keep it dry while printing. The design is heavily inspired by voron and their printers. 
 
 # Introduction
 todo
 
+At the moment this project aims not support loading and unloading filament before a print is started. While techniclly possible to use this version for example multicolor prints, this is not our focus at the moment. Future versions will support multicolor prints.
+
 ## Features
-todo
+- Multi Material Unit for FFF
+- Filament loading/unloading via strong BLDC motors
+- Enclosed Heated Filament Storage build with 2020 extrusion
+- Separate Electronics Bay like seen in Voron 2.4
+
 
 # BOM
 | Part Description   | Standard           | Qty |
