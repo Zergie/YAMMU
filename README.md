@@ -6,13 +6,14 @@ A Multi Material Unit (MMU) for eight filaments that can also function as a fila
 # Introduction
 todo
 
-At the moment this project aims not support loading and unloading filament before a print is started. While techniclly possible to use this version for example multicolor prints, this is not our focus at the moment. Future versions will support multicolor prints.
+At the moment this project aims to support loading and unloading filament before a print is started. While technicaly possible to use this version for example multi color or multi material prints, this is not our focus at the moment. We plan to support both options in the future, when we have a working and relaiable prototyp.
 
 ## Features
 - Multi Material Unit for FFF
 - Filament loading/unloading via strong BLDC motors
 - Enclosed Heated Filament Storage build with 2020 extrusion
-- Separate Electronics Bay like seen in Voron 2.4
+- Separate Electronics Bay just like any Voron 2.4
+- Strongly inspired by Voron 2.4 and Trident. So it does not stand out when plaxed next to a Voron Pinter. Also this enables the usage of voron usermods.
 
 
 # BOM
