@@ -1,19 +1,17 @@
 # Yet Another MMU
 "Eight Materials, Twin Drawers, One Enclosure."
 
-A Multi Material Unit (MMU) for eight filaments that can also function as a filament dryer and can keep it dry while printing. The design is heavily inspired by voron and their printers. 
+A Multi-Material Unit (MMU) for eight filaments that can also function as a filament dryer, keeping them dry while printing. The design is heavily inspired by Voron and their printers.
 
 # Introduction
-todo
-
-At the moment this project aims to support loading and unloading filament before a print is started. While technicaly possible to use this version for example multi color or multi material prints, this is not our focus at the moment. We plan to support both options in the future, when we have a working and relaiable prototyp.
+Currently, this project aims to support loading and unloading filament before a print begins. While it is technically possible to use this version for multi-color or multi-material prints, this is not our focus at the moment. We plan to support both options in the future, once we have a reliable working prototype.
 
 ## Features
-- Multi Material Unit for FFF
-- Filament loading/unloading via strong BLDC motors
-- Enclosed Heated Filament Storage build with 2020 extrusion
-- Separate Electronics Bay just like any Voron 2.4
-- Strongly inspired by Voron 2.4 and Trident. So it does not stand out when plaxed next to a Voron Pinter. Also this enables the usage of voron usermods.
+- Multi-Material Unit for FFF
+- Filament loading and unloading via powerful BLDC motors
+- Enclosed Heated Filament Storage Built with 2020 Extrusion
+- Separate electronics bay, similar to the one in the Voron 2.4
+- Strongly inspired by the Voron 2.4 and Trident, this design seamlessly blends in when placed next to a Voron printer. Additionally, it supports the use of Voron user modifications.
 
 
 # BOM
