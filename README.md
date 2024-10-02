@@ -1,3 +1,6 @@
+ <!--![GitHub Release](https://img.shields.io/github/v/release/Zergie/YAMMU)-->
+ ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/Zergie/YAMMU)
+
 # Yet Another MMU
 "Eight Materials, Twin Drawers, One Enclosure."
 
