@@ -13,6 +13,36 @@ Currently, this project aims to support loading and unloading filament before a 
 - Separate electronics bay, similar to the one in the Voron 2.4
 - Strongly inspired by the Voron 2.4 and Trident, this design seamlessly blends in when placed next to a Voron printer. Additionally, it supports the use of Voron user modifications.
 
+# Current state
+We are currently gearing up to release the first teaser, version 0.1. At this stage, not everything is running smoothly just yet, so we could really use your help! If you have skills in CAD, electronics, coding, or if you simply have a few hours to spare for testing the current iteration, we'd love to hear from you.
+
+Your input and feedback can make a huge difference, and we’re excited to have the community involved in this journey. Feel free to reach out to me directly if you're interested in contributing. And if you're comfortable with GitHub, pull requests are also more than welcome!
+
+## v0.1
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av0.1&label=done&color=green)
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av0.1&label=todo&color=red)
+- Loading and Unloading filament before a print is started
+
+## v0.2
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av0.2&label=done&color=green)
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av0.2&label=todo&color=red)
+- All of the above
+- Electronics on Breadboard
+- Loading and Unloading filament at the start of a print, for example as a "Filament Start Gcode" in OrcaSlicer
+
+## v1.0
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av1.0&label=todo&color=red)
+- All of the above
+- Heating the Chamber for Drying Filament
+- Electronics on Custom PCB
+
+## v2.0
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av2.0&label=done&color=green)
+![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av2.0&label=todo&color=red)
+- All of the above
+- Supporting the Extruder via the BLDC motor. When the extruder pulls the filament, the BLDC motor pushes it, and vice versa.
+
 # Used Open Source Parts
 - Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident/blob/main/LICENSE)
 by Voron Design is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
