@@ -21,14 +21,14 @@ Your input and feedback can make a huge difference, and we’re excited to have 
 ## v0.1
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av0.1&label=done&color=green)
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av0.1&label=todo&color=red)
-- Loading and Unloading filament before a print is started
+- Manual Loading, e.g. Loading and Unloading filament before a print is started
 
 ## v0.2
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av0.2&label=done&color=green)
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av0.2&label=todo&color=red)
 - All of the above
 - Electronics on Breadboard
-- Loading and Unloading filament at the start of a print, for example as a "Filament Start Gcode" in OrcaSlicer
+- Automatic Loading, e.g. Loading and Unloading filament at the start of a print, for example as a "Filament Start Gcode" in OrcaSlicer
 
 ## v1.0
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
