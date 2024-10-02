@@ -21,7 +21,6 @@ Your input and feedback can make a huge difference, and we’re excited to have 
 ## v1.0
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av1.0&label=todo&color=red)
-- All of the above
 - Manual Loading, e.g. Loading and Unloading filament before a print is started
 - Automatic Loading, e.g. Loading and Unloading filament at the start of a print, for example as a "Filament Start Gcode" in OrcaSlicer
 - Heating the Chamber for Drying Filament
