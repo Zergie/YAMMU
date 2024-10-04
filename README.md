@@ -44,5 +44,7 @@ by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share
 by Jason_116929 is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Kit for Removable Panels/Doors for Voron V2/Trident using Strong Snap Latch](https://www.printables.com/model/702768-kit-for-removable-panelsdoors-for-voron-v2trident-/files)
 by Victor Mateus Oliveira is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+- Parts from [Involute GT2 Pulley](https://www.printables.com/model/77596-involute-gt2-pulley/files)
+by ebqu3 is licensed under the Creative Commons - Attribution license.
 - Parts from []()
 by #### is licensed under the ####.
