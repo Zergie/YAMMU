@@ -38,7 +38,7 @@ Last stage for loading filament is the tool head. Here a filament sensor must be
 
 Naturally, the filament chamber is meticulously sealed to ensure optimal conditions, and it is precisely heated to maintain the necessary temperature for efficient operation.
 
-<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+<img src="Images/render_ebay_processed.png" width="400px"></img>
 
 And all electronic components are organized in an electronics bay, much like the design of a Voron printer.
 
