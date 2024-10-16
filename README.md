@@ -39,9 +39,6 @@ We are currently gearing up to release the first teaser, version 0.1. At this st
 
 Your input and feedback can make a huge difference, and we’re excited to have the community involved in this journey. Feel free to reach out to me directly if you're interested in contributing. And if you're comfortable with GitHub, pull requests are also more than welcome!
 
-# Help needed
-We're on the lookout for some awesome people to join our project and give us a hand with a few exciting tasks. If you're into testing, we'd love your help to make sure everything's running smoothly. Got a flair for electronics? Perfect! We could use your expertise to innovate and troubleshoot some cool hardware. And if writing is your thing, we could definitely use some help creating clear and engaging documentation. Whether you're a pro or just keen to dive in and learn, we'd be thrilled to have you onboard to help us keep things moving!
-
 ## v1.0
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av1.0&label=todo&color=red)
@@ -55,6 +52,9 @@ We're on the lookout for some awesome people to join our project and give us a h
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av2.0&label=todo&color=red)
 - All of the above
 - Supporting the Extruder via the BLDC motor. When the extruder pulls the filament, the BLDC motor pushes it, and vice versa.
+
+# Help needed
+We're on the lookout for some awesome people to join our project and give us a hand with a few exciting tasks. If you're into testing, we'd love your help to make sure everything's running smoothly. Got a flair for electronics? Perfect! We could use your expertise to innovate and troubleshoot some cool hardware. And if writing is your thing, we could definitely use some help creating clear and engaging documentation. Whether you're a pro or just keen to dive in and learn, we'd be thrilled to have you onboard to help us keep things moving!
 
 # Used Open Source Parts
 - Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident/blob/main/LICENSE)
