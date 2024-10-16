@@ -50,3 +50,11 @@ by Victor Mateus Oliveira is licensed under the GNU GENERAL PUBLIC LICENSE Versi
 by Artxime is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
 - Parts from []()
 by #### is licensed under the ####.
+
+# Keep Browsing
+Is YAMMU not the ideal MMU for you? Consider these alternatives:
+- [ERCF v2](https://github.com/Enraged-Rabbit-Community/ERCF_v2): ERCF V1.1 served as my original MMU and inspired the development of YAMMU.
+- [8-Track](https://github.com/ArmoredTurtle/8-Track-Raven-Alpha)
+- [https://github.com/Esoterical/PrinterMods/tree/main/Primitive%20Infinite%20Spool%20System](https://github.com/Esoterical/PrinterMods/tree/main/Primitive%20Infinite%20Spool%20System)
+- [TradRack](https://github.com/Annex-Engineering/TradRack)
+- Prusa MMU3
