@@ -26,7 +26,7 @@ The YAMMU system features two identical feeders that take inspiration from Baboo
 
 The filament is operated by two micro servos, which provide precise control and adjustability. These micro servos ensure that the filament functions efficiently and reliably. By utilizing these servos, the system achieves a high level of performance, making it suitable for various applications.
 
-<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+<img src="Images/render_splitter_processed.png" width="400px"></img>
 
 After passing through the feeder, the filament reaches the splitter. This component contains a filament switch that is triggered when a filament is present. If the switch does not trigger after loading a filament, it indicates a problem, and we can halt the print. Once any potential problems are cleared, the print can then be resumed.
 

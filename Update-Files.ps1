@@ -11,8 +11,9 @@ function Get-Files {
             Assembly = { Compress-Archive -Path Assembly.step -DestinationPath Assembly.zip -Force }
         }
         Images = @{
-            render_1 = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
-            render_feeder = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
+            render_1        = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
+            render_feeder   = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
+            render_splitter = "Invoke-ScriptFu -Resize $($s=850; (($s/1024)*1280)),$s -CropCenter 400,400"
         }
     }
 }
