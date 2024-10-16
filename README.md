@@ -18,10 +18,29 @@ Currently, this project aims to support loading and unloading filament before a 
 - Separate electronics bay, similar to the one in the Voron 2.4
 - Strongly inspired by the Voron 2.4 and Trident, this design seamlessly blends in when placed next to a Voron printer. Additionally, it supports the use of Voron user modifications.
 
+<img src="Images/render_feeder_processed.png" width="400px"></img>
+
+The YAMMU system features two identical feeders that take inspiration from Baboo Labs' "First Stage Loader." A key design advantage is the relatively short inlet tube, which simplifies the filament loading process and makes it exceptionally convenient. This practical design element sets it apart from other MMUs, as these feeders not only handle the initial loading of the filament but also seamlessly guide it directly into the extruder. As a result of this integrated functionality, a relatively large BLDC motor is required to ensure efficient operation and maintain consistent performance throughout the filament loading process. This approach not only enhances the user experience but also contributes to the overall reliability and effectiveness of the system.
+
+<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+
+The filament is operated by two micro servos, which provide precise control and adjustability. These micro servos ensure that the filament functions efficiently and reliably. By utilizing these servos, the system achieves a high level of performance, making it suitable for various applications.
+
+<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+
+After passing through the feeder, the filament reaches the splitter. This component contains a filament switch that is triggered when a filament is present. If the switch does not trigger after loading a filament, it indicates a problem, and we can halt the print. Once any potential problems are cleared, the print can then be resumed.
+
+<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+
+Last stage for loading filament is the tool head. Here a filament sensor must be present so the YAMMU knows when to switch off the BLDC motor. A suitable modification for the Stealthburner / Clockwork 2 can be found [here](https://github.com/Enraged-Rabbit-Community/ERCF_v2/blob/master/Recommended_Options/Toolhead_Modifications/Stls/1_Toolhead_And_Entry_Sensors/SB_CW2_Body.stl).
+
 # Current state
 We are currently gearing up to release the first teaser, version 0.1. At this stage, not everything is running smoothly just yet, so we could really use your help! If you have skills in CAD, electronics, coding, or if you simply have a few hours to spare for testing the current iteration, we'd love to hear from you.
 
 Your input and feedback can make a huge difference, and we’re excited to have the community involved in this journey. Feel free to reach out to me directly if you're interested in contributing. And if you're comfortable with GitHub, pull requests are also more than welcome!
+
+# Help needed
+We're on the lookout for some awesome people to join our project and give us a hand with a few exciting tasks. If you're into testing, we'd love your help to make sure everything's running smoothly. Got a flair for electronics? Perfect! We could use your expertise to innovate and troubleshoot some cool hardware. And if writing is your thing, we could definitely use some help creating clear and engaging documentation. Whether you're a pro or just keen to dive in and learn, we'd be thrilled to have you onboard to help us keep things moving!
 
 ## v1.0
 ![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
