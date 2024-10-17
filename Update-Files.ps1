@@ -30,7 +30,9 @@ function Invoke-ScriptFu {
     param(
         [int[]] $Crop, # width, height, x, y
         [int[]] $CropCenter, # width, height
-        [int[]] $Resize # width, height
+        [int[]] $Resize, # width, height
+        [int]   $Contrast, # -127 .. 127
+        [int]   $Bightness # -127 .. 127
     )
 
     $script = '(let* ((image (car (gimp-file-load RUN-NONINTERACTIVE "input.png" "input.png"))) (drawable (car (gimp-image-get-active-layer image)))) __script__(gimp-file-save RUN-NONINTERACTIVE image drawable "output.png" "output.png") (gimp-image-delete image))'
@@ -47,10 +49,15 @@ function Invoke-ScriptFu {
         $script = $script.Replace("__script__", "(gimp-image-crop image {0} {1} (/ (- (car (gimp-image-width image)) {0}) 2) (/ (- (car (gimp-image-height image)) {1}) 2)) __script__" -f $($CropCenter))
     }
 
+    if ($Contrast -or $Bightness) {
+        $script = $script.Replace("__script__", "(gimp-brightness-contrast drawable {0} {1}) __script__" -f ($Bightness, $Contrast))
+    }
+
     $script = $script.Replace("__script__", "")
     $script = $script.Replace("input.png", $Global:op.Input)
     $script = $script.Replace("output.png", $Global:op.Output)
 
+    Write-Debug $script
     Invoke-Expression ". `"$gimp`" -i -b '$script' -b '(gimp-quit 0)'"
 }
 
