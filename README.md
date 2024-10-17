@@ -30,7 +30,7 @@ The filament is operated by two micro servos, which provide precise control and 
 
 After passing through the feeder, the filament reaches the splitter. This component contains a filament switch that is triggered when a filament is present. If the switch does not trigger after loading a filament, it indicates a problem, and we can halt the print. Once any potential problems are cleared, the print can then be resumed.
 
-<img src="https://img.shields.io/badge/todo%3A_add_render-red" width="400px"></img>
+<img src="Images\render_cw2_processed.png" width="400px"></img>
 
 Last stage for loading filament is the tool head. Here a filament sensor must be present so the YAMMU knows when to switch off the BLDC motor. A suitable modification for the Stealthburner / Clockwork 2 can be found [here](https://github.com/Enraged-Rabbit-Community/ERCF_v2/blob/master/Recommended_Options/Toolhead_Modifications/Stls/1_Toolhead_And_Entry_Sensors/SB_CW2_Body.stl).
 
