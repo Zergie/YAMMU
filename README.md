@@ -82,6 +82,6 @@ by #### is licensed under the ####.
 Is YAMMU not the ideal MMU for you? Consider these alternatives:
 - [ERCF v2](https://github.com/Enraged-Rabbit-Community/ERCF_v2): ERCF V1.1 served as my original MMU and inspired the development of YAMMU.
 - [8-Track](https://github.com/ArmoredTurtle/8-Track-Raven-Alpha)
-- [https://github.com/Esoterical/PrinterMods/tree/main/Primitive%20Infinite%20Spool%20System](https://github.com/Esoterical/PrinterMods/tree/main/Primitive%20Infinite%20Spool%20System)
+- [Primitive Infinite Spool System](https://github.com/Esoterical/PrinterMods/tree/main/Primitive%20Infinite%20Spool%20System)
 - [TradRack](https://github.com/Annex-Engineering/TradRack)
 - Prusa MMU3
