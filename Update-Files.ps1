@@ -16,6 +16,7 @@ function Get-Files {
             render_ebay     = "Invoke-ScriptFu -Resize $($s=500; (($s/1024)*1280)),$s -Crop 400,400,112,0"
             render_feeder   = "Invoke-ScriptFu -Resize $($s=700; (($s/1024)*1280)),$s -CropCenter 400,400"
             render_splitter = "Invoke-ScriptFu -Resize $($s=500; (($s/1024)*1280)),$s -CropCenter 400,400"
+            render_heater   = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
         }
     }
 }
@@ -125,7 +126,9 @@ try {
                     }
 
                     # do or do not (there is no try)
-                    if ($null -eq $op.output -and !$Force) {
+                    if (!(Test-Path $op.Input)) {
+                        Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (no input file present)"
+                    } elseif ($null -eq $op.output -and !$Force) {
                         Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (output is newer than input)"
                     } else {
                         Write-Host -ForegroundColor Cyan "$($op.Input) :"
