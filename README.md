@@ -42,6 +42,13 @@ Naturally, the filament chamber is meticulously sealed to ensure optimal conditi
 
 And all electronic components are organized in an electronics bay, much like the design of a Voron printer.
 
+# Electronics
+For YAMMU, we require a significant number of PWM ports along with several inputs for PWM, filament sensors, and other components. Currently, there's no available mainboard that meets all these requirements.
+So, we've decided to take matters into our own hands and build our own MCU. Imagine it as a specialized hub, tailored just for us — packed with all the essential features we need for our project.
+It's going to be custom-made to fit our specific needs, ensuring we have everything required to innovate without compromise.
+
+[oshwlab.com](https://oshwlab.com/tpuchinger/mmu-control-board-v3-1)
+
 # Current state
 We are currently gearing up to release the first teaser, version 0.1. At this stage, not everything is running smoothly just yet, so we could really use your help! If you have skills in CAD, electronics, coding, or if you simply have a few hours to spare for testing the current iteration, we'd love to hear from you.
 
