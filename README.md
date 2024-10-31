@@ -43,7 +43,7 @@ Naturally, the filament chamber is meticulously sealed to ensure optimal conditi
 And all electronic components are organized in an electronics bay, much like the design of a Voron printer.
 
 # Electronics
-For YAMMU, we require a significant number of PWM ports along with several inputs for PWM, filament sensors, and other components. Currently, there's no available mainboard that meets all these requirements.
+For YAMMU, we require a significant number of PWM ports along with several inputs for RPM, filament sensors, and other components. Currently, there's no available mainboard that meets all these requirements.
 So, we've decided to take matters into our own hands and build our own MCU. Imagine it as a specialized hub, tailored just for us — packed with all the essential features we need for our project.
 It's going to be custom-made to fit our specific needs, ensuring we have everything required to innovate without compromise.
 
