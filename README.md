@@ -72,8 +72,10 @@ Your input and feedback can make a huge difference, and we’re excited to have 
 We're on the lookout for some awesome people to join our project and give us a hand with a few exciting tasks. If you're into testing, we'd love your help to make sure everything's running smoothly. Got a flair for electronics? Perfect! We could use your expertise to innovate and troubleshoot some cool hardware. And if writing is your thing, we could definitely use some help creating clear and engaging documentation. Whether you're a pro or just keen to dive in and learn, we'd be thrilled to have you onboard to help us keep things moving!
 
 # Used Open Source Parts
-- Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident/blob/main/LICENSE)
+- Parts from [Voron Trident](https://github.com/VoronDesign/Voron-Trident)
 by Voron Design is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
+- Parts from [ERCF v2](https://github.com/Enraged-Rabbit-Community/ERCF_v2)
+by Enraged Rabbit Community is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
 - Parts from [Integrated Auto-Rewind Spool Holder](https://www.thingiverse.com/thing:3781815)
 by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Voron 2.4 Front Panel Handle, Hinge & Magnet Latch](https://www.printables.com/model/371692-voron-24-front-panel-handle-hinge-magnet-latch/files)
