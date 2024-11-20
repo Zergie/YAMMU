@@ -32,8 +32,8 @@ function Get-Files {
 $gimp = Get-ChildItem "$env:ProgramFiles\gimp*" -Directory |
         Get-ChildItem -Directory -Filter bin |
         Get-ChildItem -File -Filter gimp*console*.exe |
-        ForEach-Object FullName
-$stl_transform = "wsl stl_transform"
+        ForEach-Object FullName # see: https://www.gimp.org/downloads/
+$stl_transform = "wsl stl_transform" # see: https://github.com/AllwineDesigns/stl_cmd
 
 function Update-Stl {
     param (
