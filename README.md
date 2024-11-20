@@ -76,8 +76,8 @@ We're on the lookout for some awesome people to join our project and give us a h
 by Voron Design is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
 - Parts from [ERCF v2](https://github.com/Enraged-Rabbit-Community/ERCF_v2)
 by Enraged Rabbit Community is licensed under the GNU GENERAL PUBLIC LICENSE Version 3
-- Parts from [Integrated Auto-Rewind Spool Holder](https://www.thingiverse.com/thing:3781815)
-by VincentGroenhuis is licensed under the Creative Commons - Attribution - Share Alike license.
+- Parts from [Stronger Compact Spool Auto-Rewinder](https://www.printables.com/model/784434-stronger-compact-spool-auto-rewinder)
+by rans_1668459 is licensed under the GNU GENERAL PUBLIC LICENSE Version 2.
 - Parts from [Voron 2.4 Front Panel Handle, Hinge & Magnet Latch](https://www.printables.com/model/371692-voron-24-front-panel-handle-hinge-magnet-latch/files)
 by Jason_116929 is licensed under the Creative Commons - Attribution - Share Alike license.
 - Parts from [Kit for Removable Panels/Doors for Voron V2/Trident using Strong Snap Latch](https://www.printables.com/model/702768-kit-for-removable-panelsdoors-for-voron-v2trident-/files)
