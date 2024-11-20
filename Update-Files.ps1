@@ -8,7 +8,7 @@ function Get-Files {
     $scriptFu = $Global:scriptFu
     @{
         CAD = @{
-            Assembly = { Compress-Archive -Path Assembly.step -DestinationPath Assembly.zip -Force }
+            'Assembly *' = { Get-ChildItem | Compress-Archive -DestinationPath Assembly.zip -Force }
         }
         Images = @{
             render_1        = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
@@ -132,8 +132,10 @@ try {
                         Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (output is newer than input)"
                     } else {
                         Write-Host -ForegroundColor Cyan "$($op.Input) :"
+                        $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
                         $Global:op = $op
                         Invoke-Command $op.Commands
+                        $PSDefaultParameterValues.Remove('Get-ChildItem:Path')
                         Write-Host
                     }
                 }
