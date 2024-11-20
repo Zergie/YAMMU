@@ -8,7 +8,10 @@ function Get-Files {
     $scriptFu = $Global:scriptFu
     @{
         CAD = @{
-            'Assembly *' = { Get-ChildItem | Compress-Archive -DestinationPath Assembly.zip -Force }
+            'Assembly *' = {
+                Get-ChildItem | Compress-Archive -DestinationPath Assembly.zip -Force
+                Get-ChildItem | Remove-Item
+            }
         }
         Images = @{
             render_1        = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
@@ -18,20 +21,64 @@ function Get-Files {
             render_splitter = "Invoke-ScriptFu -Resize $($s=500; (($s/1024)*1280)),$s -CropCenter 400,400"
             render_heater   = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
         }
+        STLs = @{
+            '**/*.stl' = { Get-ChildItem | Update-Stl }
+        }
     }
 }
 
 
+# programms
 $gimp = Get-ChildItem "$env:ProgramFiles\gimp*" -Directory |
         Get-ChildItem -Directory -Filter bin |
         Get-ChildItem -File -Filter gimp*console*.exe |
         ForEach-Object FullName
+$stl_transform = "wsl stl_transform"
+
+function Update-Stl {
+    param (
+    [Parameter(Mandatory, ValueFromPipeline)]
+    [System.IO.FileSystemInfo[]]
+    $file
+    )
+begin {
+    Set-Content -Path $Global:op.Output -Value (Get-Date)
+}
+process {
+    Push-Location $file.DirectoryName
+    try {
+        Write-Host -ForegroundColor Green $file.Name
+        $bbox = wsl stl_bbox $file.Name |
+            Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
+            ForEach-Object { $_.Matches } |
+            ForEach-Object { [pscustomobject]@{x=[decimal]$_.Groups[1].value;y=[decimal]$_.Groups[2].value;z=[decimal]$_.Groups[3].value}}
+        $center = [pscustomobject]@{
+            x=[Math]::Round($bbox[2].x / 2 + $bbox[0].x, 4)
+            y=[Math]::Round($bbox[2].y / 2 + $bbox[0].y, 4)
+        }
+        # $center | ConvertTo-Json -Compress | Write-Host
+        $cmd = ""
+        if ($center.x -ne 0) { $cmd  += " -tx $(-$center.x)" }
+        if ($center.y -ne 0) { $cmd  += " -ty $(-$center.y)" }
+        if ($bbox[0].z -ne 0) { $cmd += " -tz $(-$bbox[0].z)" }
+        if ($cmd.Length -gt 0) {
+            $cmd = "$stl_transform $cmd $($file.Name) out.stl"
+            Write-Host -ForegroundColor Cyan $cmd
+            Invoke-Expression $cmd
+            Move-Item out.stl $file.Name -Force
+        }
+    } finally {
+        Pop-Location
+    }
+}
+end {}
+}
 
 function Invoke-ScriptFu {
     param(
         [int[]] $Crop, # width, height, x, y
         [int[]] $CropCenter, # width, height
-        [int[]] $Resize, # width, height
+    [int[]] $Resize, # width, height
         [int]   $Contrast, # -127 .. 127
         [int]   $Bightness # -127 .. 127
     )
@@ -110,8 +157,11 @@ try {
                             $op.Output = $op.Input + ".zip"
                             $op.Input  = $op.Input + ".step"
                         }
+                        STLs {
+                            $op.Output = $env:Temp + "yammu.txt"
+                        }
                         default {
-                            throw "Not Implemented"
+                            throw "$($_.Name) is not implemented"
                         }
                     }
 
@@ -131,12 +181,15 @@ try {
                     } elseif ($null -eq $op.output -and !$Force) {
                         Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (output is newer than input)"
                     } else {
-                        Write-Host -ForegroundColor Cyan "$($op.Input) :"
-                        $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
-                        $Global:op = $op
-                        Invoke-Command $op.Commands
-                        $PSDefaultParameterValues.Remove('Get-ChildItem:Path')
-                        Write-Host
+                        try {
+                            Write-Host -ForegroundColor Cyan "$($op.Input) :"
+                            $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
+                            $Global:op = $op
+                            Invoke-Command $op.Commands
+                            Write-Host
+                        } finally {
+                            $PSDefaultParameterValues.Remove('Get-ChildItem:Path')
+                        }
                     }
                 }
             } finally {
