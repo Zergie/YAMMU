@@ -51,6 +51,14 @@ process {
     Push-Location $file.DirectoryName
     try {
         Write-Host -ForegroundColor Green $file.Name
+        @(
+            '_x1.stl$'
+            '\s'
+        ) | ForEach-Object {
+            if ($file.Name -match $_) {
+                Write-Host -ForegroundColor Red " => Illegal file name ($_)"
+            }
+        }
         $bbox = Invoke-Expression "$stl_bbox $($file.Name)" |
             Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
             ForEach-Object { $_.Matches } |
@@ -193,7 +201,7 @@ try {
                         try {
                             Write-Host -ForegroundColor Cyan "$($op.Input) :"
                             $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
-                            if ((Test-Path $op.Output)) {
+                            if ((!$Force) -and (Test-Path $op.Output)) {
                                 $PSDefaultParameterValues['Get-ChildItem:Path'] = Get-ChildItem |
                                     Where-Object LastWriteTime -gt (Get-Item $op.Output).LastWriteTime |
                                     ForEach-Object FullName
