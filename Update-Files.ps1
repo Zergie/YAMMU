@@ -33,7 +33,10 @@ $gimp = Get-ChildItem "$env:ProgramFiles\gimp*" -Directory |
         Get-ChildItem -Directory -Filter bin |
         Get-ChildItem -File -Filter gimp*console*.exe |
         ForEach-Object FullName # see: https://www.gimp.org/downloads/
+. $gimp --help | Out-Null; if ($LASTEXITCODE -ne 0) { throw "gimp is not installed" }
+
 $stl_transform = "wsl stl_transform" # see: https://github.com/AllwineDesigns/stl_cmd
+$stl_bbox = "wsl stl_bbox"
 
 function Update-Stl {
     param (
@@ -48,7 +51,7 @@ process {
     Push-Location $file.DirectoryName
     try {
         Write-Host -ForegroundColor Green $file.Name
-        $bbox = wsl stl_bbox $file.Name |
+        $bbox = Invoke-Expression "$stl_bbox $($file.Name)" |
             Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
             ForEach-Object { $_.Matches } |
             ForEach-Object { [pscustomobject]@{x=[decimal]$_.Groups[1].value;y=[decimal]$_.Groups[2].value;z=[decimal]$_.Groups[3].value}}
@@ -67,6 +70,8 @@ process {
             Invoke-Expression $cmd
             Move-Item out.stl $file.Name -Force
         }
+    } catch {
+        Remove-Item -Path $Global:op.Output
     } finally {
         Pop-Location
     }
@@ -158,7 +163,7 @@ try {
                             $op.Input  = $op.Input + ".step"
                         }
                         STLs {
-                            $op.Output = $env:Temp + "yammu.txt"
+                            $op.Output = $env:Temp + "\yammu.txt"
                         }
                         default {
                             throw "$($_.Name) is not implemented"
@@ -168,7 +173,11 @@ try {
                     # check if output is outdated
                     if (!$Force) {
                         try {
-                            if ((Get-Item $op.Input).LastWriteTime -lt (Get-Item $op.Output).LastWriteTime) {
+                            if ((
+                                    Get-ChildItem $op.Input |
+                                        Sort-Object LastWriteTime |
+                                        Select-Object -Last 1
+                                ).LastWriteTime -lt (Get-Item $op.Output).LastWriteTime) {
                                 $op.Output = $null
                             }
                         } catch {
@@ -184,6 +193,11 @@ try {
                         try {
                             Write-Host -ForegroundColor Cyan "$($op.Input) :"
                             $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
+                            if ((Test-Path $op.Output)) {
+                                $PSDefaultParameterValues['Get-ChildItem:Path'] = Get-ChildItem |
+                                    Where-Object LastWriteTime -gt (Get-Item $op.Output).LastWriteTime |
+                                    ForEach-Object FullName
+                            }
                             $Global:op = $op
                             Invoke-Command $op.Commands
                             Write-Host
