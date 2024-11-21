@@ -10,7 +10,7 @@ function Get-Files {
         CAD = @{
             'Assembly *' = {
                 Get-ChildItem | Compress-Archive -DestinationPath Assembly.zip -Force
-                Get-ChildItem | Remove-Item
+                Remove-Item Assembly* -Exclude Assembly.zip
             }
         }
         Images = @{
