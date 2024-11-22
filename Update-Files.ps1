@@ -73,9 +73,9 @@ process {
         if ($center.y -ne 0) { $cmd  += " -ty $(-$center.y)" }
         if ($bbox[0].z -ne 0) { $cmd += " -tz $(-$bbox[0].z)" }
         if ($cmd.Length -gt 0) {
-            $cmd = "$stl_transform $cmd $($file.Name) out.stl"
+            $cmd = "$stl_transform $cmd $($file.Name)"
             Write-Host -ForegroundColor Cyan $cmd
-            Invoke-Expression $cmd
+            Invoke-Expression "$cmd out.stl"
             Move-Item out.stl $file.Name -Force
         }
     } catch {
@@ -201,6 +201,10 @@ try {
                         try {
                             Write-Host -ForegroundColor Cyan "$($op.Input) :"
                             $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
+                            if ($PSDefaultParameterValues['Get-ChildItem:Path'].StartsWith("**")) {
+                                $PSDefaultParameterValues['Get-ChildItem:Path'] = $PSDefaultParameterValues['Get-ChildItem:Path'].SubString(3)
+                                $PSDefaultParameterValues['Get-ChildItem:Recurse'] = $true
+                            }
                             if ((!$Force) -and (Test-Path $op.Output)) {
                                 $PSDefaultParameterValues['Get-ChildItem:Path'] = Get-ChildItem |
                                     Where-Object LastWriteTime -gt (Get-Item $op.Output).LastWriteTime |
@@ -211,6 +215,7 @@ try {
                             Write-Host
                         } finally {
                             $PSDefaultParameterValues.Remove('Get-ChildItem:Path')
+                            $PSDefaultParameterValues.Remove('Get-ChildItem:Recurse')
                         }
                     }
                 }
