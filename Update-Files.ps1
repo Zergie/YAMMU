@@ -64,8 +64,8 @@ process {
             ForEach-Object { $_.Matches } |
             ForEach-Object { [pscustomobject]@{x=[decimal]$_.Groups[1].value;y=[decimal]$_.Groups[2].value;z=[decimal]$_.Groups[3].value}}
         $center = [pscustomobject]@{
-            x=[Math]::Round($bbox[2].x / 2 + $bbox[0].x, 4)
-            y=[Math]::Round($bbox[2].y / 2 + $bbox[0].y, 4)
+            x=[Math]::Round($bbox[2].x / 2 + $bbox[0].x, 3)
+            y=[Math]::Round($bbox[2].y / 2 + $bbox[0].y, 3)
         }
         # $center | ConvertTo-Json -Compress | Write-Host
         $cmd = ""
