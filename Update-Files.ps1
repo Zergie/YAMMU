@@ -21,6 +21,12 @@ function Get-Files {
             render_splitter = "Invoke-ScriptFu -Resize $($s=500; (($s/1024)*1280)),$s -CropCenter 400,400"
             render_heater   = "Invoke-ScriptFu -Resize $($s=550; (($s/1024)*1280)),$s -CropCenter 400,400"
         }
+        Manual = @{
+            Assembly = {
+                . $soffice --headless --convert-to pdf:writer_pdf_Export (Get-ChildItem).FullName
+                (Get-Process soffice).WaitForExit()
+            }
+        }
         STLs = @{
             '**/*.stl' = { Get-ChildItem | Update-Stl }
         }
@@ -32,11 +38,16 @@ function Get-Files {
 $gimp = Get-ChildItem "$env:ProgramFiles\gimp*" -Directory |
         Get-ChildItem -Directory -Filter bin |
         Get-ChildItem -File -Filter gimp*console*.exe |
-        ForEach-Object FullName # see: https://www.gimp.org/downloads/
+        ForEach-Object FullName # download: https://www.gimp.org/downloads/
 . $gimp --help | Out-Null; if ($LASTEXITCODE -ne 0) { throw "gimp is not installed" }
+$soffice = Get-ChildItem "$env:ProgramFiles\LibreOffice*" -Directory |
+           Get-ChildItem -Directory -Filter program |
+           Get-ChildItem -File -Filter "soffice.exe" |
+           ForEach-Object FullName # download: https://www.libreoffice.org/download/download-libreoffice/
+if ($null -eq $soffice) { throw "soffice is not installed" }
 
-$stl_transform = "wsl stl_transform" # see: https://github.com/AllwineDesigns/stl_cmd
-$stl_bbox = "wsl stl_bbox"
+$stl_transform = "wsl stl_transform" # download: https://github.com/AllwineDesigns/stl_cmd
+$stl_bbox = "wsl stl_bbox"           # download: https://github.com/AllwineDesigns/stl_cmd
 
 function Update-Stl {
     param (
@@ -136,7 +147,13 @@ function Invoke-Command {
             Invoke-Expression $command
         }
         System.Management.Automation.ScriptBlock {
-            Write-Host -ForegroundColor Cyan $command.ToString().Trim()
+            (
+                $command.ToString().Split("`n") |
+                    ForEach-Object { "`t" + $_.Trim() } |
+                    Join-String -Separator `n
+            ).Trim() |
+                ForEach-Object { "`t" + $_ } |
+                Write-Host -ForegroundColor Cyan
             $item.Invoke()
         }
         default {
@@ -173,6 +190,10 @@ try {
                         STLs {
                             $op.Output = $env:Temp + "\yammu.txt"
                         }
+                        Manual {
+                            $op.Output = $op.Input + ".pdf"
+                            $op.Input  = $op.Input + ".odp"
+                        }
                         default {
                             throw "$($_.Name) is not implemented"
                         }
@@ -192,14 +213,15 @@ try {
                         }
                     }
 
+                    Write-Host "$($op.Input) : "
+
                     # do or do not (there is no try)
                     if (!(Test-Path $op.Input)) {
-                        Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (no input file present)"
+                        Write-Host -ForegroundColor Cyan "`tNothing to do. (no input file present)"
                     } elseif ($null -eq $op.output -and !$Force) {
-                        Write-Host -ForegroundColor Cyan "$($op.Input) : Nothing to do. (output is newer than input)"
+                        Write-Host -ForegroundColor Cyan "`tNothing to do. (output is newer than input)"
                     } else {
                         try {
-                            Write-Host -ForegroundColor Cyan "$($op.Input) :"
                             $PSDefaultParameterValues['Get-ChildItem:Path'] = $op.Input
                             if ($PSDefaultParameterValues['Get-ChildItem:Path'].StartsWith("**")) {
                                 $PSDefaultParameterValues['Get-ChildItem:Path'] = $PSDefaultParameterValues['Get-ChildItem:Path'].SubString(3)
@@ -212,7 +234,6 @@ try {
                             }
                             $Global:op = $op
                             Invoke-Command $op.Commands
-                            Write-Host
                         } finally {
                             $PSDefaultParameterValues.Remove('Get-ChildItem:Path')
                             $PSDefaultParameterValues.Remove('Get-ChildItem:Recurse')
