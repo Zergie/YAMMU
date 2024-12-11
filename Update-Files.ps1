@@ -63,13 +63,22 @@ process {
     try {
         Write-Host -ForegroundColor Green $file.Name
         @(
-            '_x1.stl$'
+            '_x1\.stl$'
             '\s'
         ) | ForEach-Object {
             if ($file.Name -match $_) {
                 Write-Host -ForegroundColor Red " => Illegal file name ($_)"
             }
         }
+
+        if ($file.Name -like "*(1)*") {
+             $new_file = $file.Name.Replace('(1)', '')
+             $cmd = "Move-Item '$($file.Name)' '$new_file' -Force"
+             Write-Host -ForegroundColor Cyan $cmd
+             Invoke-Expression $cmd
+             $file = Get-ChildItem $new_file
+        }
+
         $bbox = Invoke-Expression "$stl_bbox $($file.Name)" |
             Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
             ForEach-Object { $_.Matches } |
@@ -90,7 +99,7 @@ process {
             Move-Item out.stl $file.Name -Force
         }
     } catch {
-        Remove-Item -Path $Global:op.Output
+        Remove-Item -Path $Global:op.Output -ErrorAction SilentlyContinue
     } finally {
         Pop-Location
     }
