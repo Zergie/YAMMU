@@ -61,7 +61,7 @@ begin {
 process {
     Push-Location $file.DirectoryName
     try {
-        Write-Host -ForegroundColor Green $file.Name
+        Write-Host -ForegroundColor Green $file.Name -NoNewline
         @(
             '_x1\.stl$'
             '\s'
@@ -71,12 +71,15 @@ process {
             }
         }
 
-        if ($file.Name -like "*(1)*") {
-             $new_file = $file.Name.Replace('(1)', '')
+        if ($file.Name -like "*(1)*" -or
+            $file.Name -like "*.stl.stl"
+           ) {
+             $new_file = $file.Name.Replace('(1)', '').Replace('.stl.stl', '.stl')
              $cmd = "Move-Item '$($file.Name)' '$new_file' -Force"
-             Write-Host -ForegroundColor Cyan $cmd
+             Write-Host -ForegroundColor Cyan "`n$cmd"
              Invoke-Expression $cmd
              $file = Get-ChildItem $new_file
+             Write-Host -ForegroundColor Green $file.Name -NoNewline
         }
 
         $bbox = Invoke-Expression "$stl_bbox $($file.Name)" |
@@ -87,16 +90,22 @@ process {
             x=[Math]::Round($bbox[2].x / 2 + $bbox[0].x, 3)
             y=[Math]::Round($bbox[2].y / 2 + $bbox[0].y, 3)
         }
-        # $center | ConvertTo-Json -Compress | Write-Host
+        if ($bbox[2].x -gt 200 -or $bbox[2].y -gt 200) {
+            Write-Host -ForegroundColor Red " => ($($bbox[2].x) x $($bbox[2].y)) does not fit 200x200 build plate"
+        }
+
+        Write-Host -ForegroundColor DarkGray " ($($bbox[1].x.ToString('0')), $($bbox[1].y.ToString('0')), $($bbox[1].z.ToString('0'))) x ($($bbox[2].x.ToString('0')), $($bbox[2].y.ToString('0')), $($bbox[2].z.ToString('0')))" -NoNewline
         $cmd = ""
         if ($center.x -ne 0) { $cmd  += " -tx $(-$center.x)" }
         if ($center.y -ne 0) { $cmd  += " -ty $(-$center.y)" }
         if ($bbox[0].z -ne 0) { $cmd += " -tz $(-$bbox[0].z)" }
         if ($cmd.Length -gt 0) {
             $cmd = "$stl_transform $cmd $($file.Name)"
-            Write-Host -ForegroundColor Cyan $cmd
+            Write-Host -ForegroundColor Cyan "`n$cmd"
             Invoke-Expression "$cmd out.stl"
             Move-Item out.stl $file.Name -Force
+        } else {
+            Write-Host
         }
     } catch {
         Remove-Item -Path $Global:op.Output -ErrorAction SilentlyContinue
