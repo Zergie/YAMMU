@@ -65,6 +65,7 @@ process {
         @(
             '_x1\.stl$'
             '\s'
+            'Body.*\.stl$'
         ) | ForEach-Object {
             if ($file.Name -match $_) {
                 Write-Host -ForegroundColor Red " => Illegal file name ($_)"
