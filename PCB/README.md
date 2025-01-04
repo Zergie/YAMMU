@@ -1,13 +1,19 @@
+# Current Version
+
+The PCBs were created with EasyEDA. If possible use the ![ProjectLink](https://pro.easyeda.com/editor#id=5c5aed2dd44f48b9a0c28280d7f15482) and order the PCBs from there, if possible.
+The files here may not be up to date.
+
 # Features
 
-- 4 Servo Ports with 6V Power
+- 6 Servo Ports with 6V Power
 - 3x Fan Ports
+- 2x BLDC Motor Ports
 - 2x Thermister Ports
 - 1x Heater Port
+- 1x Analog Belay Port
 - I2C Pin Header
-- Neopixel RGB Header (with one Neopixel on board)
+- Neopixel RGB Header (with one Neopixel onboard)
 - 12 V Power Input
-- 2x 12 V Power Output Ports
 
 ## USB
 The board can be connected using either the STM32 USB port or a CH340 USB serial IC. If you're opting for the STM32 USB port, do not popolate these SMD pads:
