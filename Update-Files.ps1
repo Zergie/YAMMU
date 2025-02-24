@@ -5,7 +5,6 @@ param(
 )
 
 function Get-Files {
-    $scriptFu = $Global:scriptFu
     @{
         CAD = @{
             'Assembly *' = {
@@ -30,6 +29,9 @@ function Get-Files {
         STLs = @{
             '**/*.stl' = { Get-ChildItem | Update-Stl }
         }
+        "$env:LOCALAPPDATA\Temp\Neutron\" = @{
+            '*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
+        }
     }
 }
 
@@ -49,7 +51,7 @@ if ($null -eq $soffice) { throw "soffice is not installed" }
 $stl_transform = "wsl stl_transform" # download: https://github.com/AllwineDesigns/stl_cmd
 $stl_bbox = "wsl stl_bbox"           # download: https://github.com/AllwineDesigns/stl_cmd
 
-function Update-Stl {
+function Copy-ToProjectFolder {
     param (
     [Parameter(Mandatory, ValueFromPipeline)]
     [System.IO.FileSystemInfo[]]
@@ -59,9 +61,41 @@ begin {
     Set-Content -Path $Global:op.Output -Value (Get-Date)
 }
 process {
+    Write-Host -ForegroundColor Green $file.Name -NoNewline
+    $dest = Get-ChildItem $PSScriptRoot -Recurse -Filter $_.Name
+    switch (($dest | Measure-Object).Count) {
+        0 {
+            Write-Host -ForegroundColor Red " => could not be found in project folder."
+        }
+        1 {
+            Write-Host -ForegroundColor Cyan "`nCopy-Item $($file.Name) .$($dest.FullName.Substring($PSScriptRoot.Length)) -Force"
+            Copy-Item $file.FullName $dest.FullName -Force
+            Update-Stl -File $dest -PrintNoFileName
+        }
+        default {
+            Write-Host -ForegroundColor Red " => was found multiple times in project folder."
+        }
+    }
+}
+end {}
+}
+
+function Update-Stl {
+    param (
+    [Parameter(Mandatory, ValueFromPipeline)]
+    [System.IO.FileSystemInfo[]]
+    $file,
+    [Parameter()]
+    [switch]
+    $PrintNoFileName
+    )
+begin {
+    Set-Content -Path $Global:op.Output -Value (Get-Date)
+}
+process {
     Push-Location $file.DirectoryName
     try {
-        Write-Host -ForegroundColor Green $file.Name -NoNewline
+        if (!$PrintNoFileName) { Write-Host -ForegroundColor Green $file.Name -NoNewline }
         @(
             '_x1\.stl$'
             '\s'
@@ -91,6 +125,7 @@ process {
             x=[Math]::Round($bbox[2].x / 2 + $bbox[0].x, 3)
             y=[Math]::Round($bbox[2].y / 2 + $bbox[0].y, 3)
         }
+        Write-Debug $center
         if ($bbox[2].x -gt 200 -or $bbox[2].y -gt 200) {
             $out_45 = $file.Name.Replace('.stl', '_45.stl')
             $cmd = "$stl_transform -rz 45 $($file.Name)"
@@ -134,14 +169,17 @@ process {
             Write-Host -ForegroundColor Red " => ($($bbox[2].x) x $($bbox[2].y)) does not fit 200x200 build plate"
         }
 
-        Write-Host -ForegroundColor DarkGray " ($($bbox[2].x.ToString('0')), $($bbox[2].y.ToString('0')), $($bbox[2].z.ToString('0')))" -NoNewline
+        if (!$PrintNoFileName) {
+            Write-Host -ForegroundColor DarkGray " ($($bbox[2].x.ToString('0')), $($bbox[2].y.ToString('0')), $($bbox[2].z.ToString('0')))" -NoNewline
+        }
         $cmd = ""
         if ($center.x -ne 0) { $cmd  += " -tx $(-$center.x)" }
         if ($center.y -ne 0) { $cmd  += " -ty $(-$center.y)" }
         if ($bbox[0].z -ne 0) { $cmd += " -tz $(-$bbox[0].z)" }
         if ($cmd.Length -gt 0) {
             $cmd = "$stl_transform $cmd $($file.Name)"
-            Write-Host -ForegroundColor Cyan "`n$cmd"
+            if (!$PrintNoFileName) { Write-Host -ForegroundColor Cyan "" }
+            Write-Host -ForegroundColor Cyan "$cmd"
             Invoke-Expression "$cmd out.stl"
             Move-Item out.stl $file.Name -Force
         } else {
@@ -245,15 +283,12 @@ try {
                             $op.Output = $op.Input + ".zip"
                             $op.Input  = $op.Input + ".step"
                         }
-                        STLs {
-                            $op.Output = $env:Temp + "\yammu.txt"
-                        }
                         Manual {
                             $op.Output = $op.Input + ".pdf"
                             $op.Input  = $op.Input + ".odp"
                         }
                         default {
-                            throw "$($_.Name) is not implemented"
+                            $op.Output = $env:Temp + "\yammu.txt"
                         }
                     }
 
