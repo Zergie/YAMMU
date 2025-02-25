@@ -27,10 +27,10 @@ function Get-Files {
             }
         }
         STLs = @{
-            '**/*.stl' = { Get-ChildItem | Update-Stl }
+            '**/*.stl'      = { Get-ChildItem | Update-Stl }
         }
-        "$env:LOCALAPPDATA\Temp\Neutron\" = @{
-            '*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
+        "$env:LOCALAPPDATA" = @{
+            'Temp\Neutron\*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
         }
     }
 }
@@ -58,7 +58,6 @@ function Copy-ToProjectFolder {
     $file
     )
 begin {
-    Set-Content -Path $Global:op.Output -Value (Get-Date)
 }
 process {
     Write-Host -ForegroundColor Green $file.Name -NoNewline
@@ -90,7 +89,6 @@ function Update-Stl {
     $PrintNoFileName
     )
 begin {
-    Set-Content -Path $Global:op.Output -Value (Get-Date)
 }
 process {
     Push-Location $file.DirectoryName
@@ -186,7 +184,6 @@ process {
             Write-Host
         }
     } catch {
-        Remove-Item -Path $Global:op.Output -ErrorAction SilentlyContinue
     } finally {
         Pop-Location
     }
@@ -198,7 +195,7 @@ function Invoke-ScriptFu {
     param(
         [int[]] $Crop, # width, height, x, y
         [int[]] $CropCenter, # width, height
-    [int[]] $Resize, # width, height
+        [int[]] $Resize, # width, height
         [int]   $Contrast, # -127 .. 127
         [int]   $Bightness # -127 .. 127
     )
@@ -260,6 +257,7 @@ function Invoke-Command {
 
 
 try {
+    $yammu_file = $env:Temp + "\yammu.txt"
     Push-Location $PSScriptRoot
     (Get-Files).GetEnumerator() |
         ForEach-Object {
@@ -288,7 +286,7 @@ try {
                             $op.Input  = $op.Input + ".odp"
                         }
                         default {
-                            $op.Output = $env:Temp + "\yammu.txt"
+                            $op.Output = $yammu_file
                         }
                     }
 
@@ -339,5 +337,6 @@ try {
             }
         }
 } finally {
+    Set-Content -Path $yammu_file -Value (Get-Date)
     Pop-Location
 }
