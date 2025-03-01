@@ -67,9 +67,12 @@ process {
             Write-Host -ForegroundColor Red " => could not be found in project folder."
         }
         1 {
-            Write-Host -ForegroundColor Cyan "`nCopy-Item $($file.Name) .$($dest.FullName.Substring($PSScriptRoot.Length)) -Force"
-            Copy-Item $file.FullName $dest.FullName -Force
-            Update-Stl -File $dest -PrintNoFileName
+            if ($dest.LastWriteTime -gt $file.LastWriteTime) {
+                Write-Host -ForegroundColor Cyan "Nothing to do. (output is newer than input)"
+            } else {
+                Write-Host -ForegroundColor Cyan "`nCopy-Item $($file.Name) .$($dest.FullName.Substring($PSScriptRoot.Length)) -Force"
+                Copy-Item $file.FullName $dest.FullName -Force
+            }
         }
         default {
             Write-Host -ForegroundColor Red " => was found multiple times in project folder."
@@ -127,23 +130,19 @@ process {
         if ($bbox[2].x -gt 200 -or $bbox[2].y -gt 200) {
             $out_45 = $file.Name.Replace('.stl', '_45.stl')
             $cmd = "$stl_transform -rz 45 $($file.Name)"
-            # Write-Host -ForegroundColor Cyan "`n$cmd" -NoNewline
             Invoke-Expression "$cmd $out_45"
             $bbox_45 = Invoke-Expression "$stl_bbox $out_45" |
                 Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
                 ForEach-Object { $_.Matches } |
                 ForEach-Object { [pscustomobject]@{x=[decimal]$_.Groups[1].value;y=[decimal]$_.Groups[2].value;z=[decimal]$_.Groups[3].value}}
-            # Write-Host -ForegroundColor DarkGray " ($($bbox_45[2].x.ToString('0')), $($bbox_45[2].y.ToString('0')), $($bbox_45[2].z.ToString('0')))" -NoNewline
 
             $out_215 = $file.Name.Replace('.stl', '_215.stl')
             $cmd = "$stl_transform -rz 215 $($file.Name)"
-            # Write-Host -ForegroundColor Cyan "`n$cmd" -NoNewline
             Invoke-Expression "$cmd $out_215"
             $bbox_215 = Invoke-Expression "$stl_bbox $out_215" |
                 Select-String -Pattern "\(([^,]+),\s*([^,]+),\s*([^,]+)\)" -AllMatches |
                 ForEach-Object { $_.Matches } |
                 ForEach-Object { [pscustomobject]@{x=[decimal]$_.Groups[1].value;y=[decimal]$_.Groups[2].value;z=[decimal]$_.Groups[3].value}}
-            # Write-Host -ForegroundColor DarkGray " ($($bbox_215[2].x.ToString('0')), $($bbox_215[2].y.ToString('0')), $($bbox_215[2].z.ToString('0')))" -NoNewline
 
             if ($bbox_45[2].x -le 200 -and $bbox_215[2].x -le 200 -and
                 $bbox_45[2].y -le 200 -and $bbox_215[2].y -le 200) {
@@ -167,9 +166,6 @@ process {
             Write-Host -ForegroundColor Red " => ($($bbox[2].x) x $($bbox[2].y)) does not fit 200x200 build plate"
         }
 
-        if (!$PrintNoFileName) {
-            Write-Host -ForegroundColor DarkGray " ($($bbox[2].x.ToString('0')), $($bbox[2].y.ToString('0')), $($bbox[2].z.ToString('0')))" -NoNewline
-        }
         $cmd = ""
         if ($center.x -ne 0) { $cmd  += " -tx $(-$center.x)" }
         if ($center.y -ne 0) { $cmd  += " -ty $(-$center.y)" }
@@ -260,6 +256,7 @@ try {
     $yammu_file = $env:Temp + "\yammu.txt"
     Push-Location $PSScriptRoot
     (Get-Files).GetEnumerator() |
+        Sort-Object { $_.Key -notin @("$env:LOCALAPPDATA") } |
         ForEach-Object {
             try {
                 Push-Location $_.Name
@@ -321,7 +318,7 @@ try {
                             if ((!$Force) -and (Test-Path $op.Output)) {
                                 $PSDefaultParameterValues['Get-ChildItem:Path'] = Get-ChildItem |
                                     Where-Object LastWriteTime -gt (Get-Item $op.Output).LastWriteTime |
-                                    ForEach-Object FullName
+                                    ForEach-Object { [System.IO.Path]::Combine($_.DirectoryName, ($_.Name -replace '(\[|\])','``$1')) }
                             }
                             $Global:op = $op
                             Invoke-Command $op.Commands
