@@ -33,7 +33,7 @@ After passing through the feeder, the filament reaches the splitter. This compon
 
 <img src="Images\render_cw2_processed.png" width="400px"></img>
 
-Last stage for loading filament is the tool head. Here a filament sensor must be present so the YAMMU knows when to switch off the BLDC motor. A suitable modification for the Stealthburner / Clockwork 2 can be found [here](https://github.com/Enraged-Rabbit-Community/ERCF_v2/blob/master/Recommended_Options/Toolhead_Modifications/Stls/1_Toolhead_And_Entry_Sensors/SB_CW2_Body.stl) or [a modified version here](STls/Toolhead_Modifications).
+Last stage for loading filament is the tool head. Here a filament sensor must be present so the YAMMU knows when to switch off the BLDC motor. A suitable modification for the Stealthburner / Clockwork 2 can be found [here](https://github.com/Enraged-Rabbit-Community/ERCF_v2/blob/master/Recommended_Options/Toolhead_Modifications/STLs/1_Toolhead_And_Entry_Sensors/SB_CW2_Body.stl) or [a modified version here](STls/Toolhead_Modifications).
 
 <img src="Images/render_heater_processed.png" width="400px"></img>
 
