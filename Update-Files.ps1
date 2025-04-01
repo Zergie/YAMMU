@@ -27,7 +27,9 @@ function Get-Files {
             }
         }
         STLs = @{
-            '**/*.stl'      = { Get-ChildItem | Update-Stl }
+            '**/*.stl.stl'  = { Get-ChildItem | Rename-Stl }
+            # '**/*(1)*.stl'  = { Get-ChildItem | Rename-Stl }
+            # '**/*.stl'      = { Get-ChildItem | Update-Stl }
         }
         "$env:LOCALAPPDATA" = @{
             'Temp\Neutron\*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
@@ -68,7 +70,7 @@ process {
         }
         1 {
             if ($dest.LastWriteTime -gt $file.LastWriteTime) {
-                Write-Host -ForegroundColor Cyan "Nothing to do. (output is newer than input)"
+                Write-Host -ForegroundColor Cyan " => Nothing to do. (output is newer than input)"
             } else {
                 Write-Host -ForegroundColor Cyan "`nCopy-Item $($file.Name) .$($dest.FullName.Substring($PSScriptRoot.Length)) -Force"
                 Copy-Item $file.FullName $dest.FullName -Force
@@ -84,12 +86,12 @@ end {}
 
 function Update-Stl {
     param (
-    [Parameter(Mandatory, ValueFromPipeline)]
-    [System.IO.FileSystemInfo[]]
-    $file,
-    [Parameter()]
-    [switch]
-    $PrintNoFileName
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [System.IO.FileSystemInfo[]]
+        $file,
+        [Parameter()]
+        [switch]
+        $PrintNoFileName
     )
 begin {
 }
@@ -101,21 +103,12 @@ process {
             '_x1\.stl$'
             '\s'
             'Body\d.*\.stl$'
+            '[[]a[]][^_]'
+            '[[][^a][]]'
         ) | ForEach-Object {
             if ($file.Name -match $_) {
                 Write-Host -ForegroundColor Red " => Illegal file name ($_)"
             }
-        }
-
-        if ($file.Name -like "*(1)*" -or
-            $file.Name -like "*.stl.stl"
-           ) {
-             $new_file = $file.Name.Replace('(1)', '').Replace('.stl.stl', '.stl')
-             $cmd = "Move-Item '$($file.Name)' '$new_file' -Force"
-             Write-Host -ForegroundColor Cyan "`n$cmd"
-             Invoke-Expression $cmd
-             $file = Get-ChildItem $new_file
-             Write-Host -ForegroundColor Green $file.Name -NoNewline
         }
 
         $bbox = Invoke-Expression "$stl_bbox $($file.Name)" |
@@ -186,6 +179,23 @@ process {
 }
 end {}
 }
+
+function Rename-Stl {
+    param (
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [System.IO.FileSystemInfo[]]
+        $file
+    )
+process {
+    Push-Location $file.DirectoryName
+    try {
+        $new_file = $file.Name.Replace('(1)', '').Replace('.stl.stl', '.stl')
+        Write-Host -ForegroundColor Cyan "Rename-Item '$($file.Name)' '$new_file' -Force"
+        Rename-Item $file.Name $new_file -Force
+    } finally {
+        Pop-Location
+    }
+}}
 
 function Invoke-ScriptFu {
     param(
