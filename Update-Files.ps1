@@ -27,13 +27,13 @@ function Get-Files {
             }
         }
         STLs = @{
-            '**/*.stl.stl'  = { Get-ChildItem | Rename-Stl }
-            # '**/*(1)*.stl'  = { Get-ChildItem | Rename-Stl }
+            '**/*.stl*.stl'  = { Get-ChildItem | Rename-Stl }
+            '**/*(*)*.stl'  = { Get-ChildItem | Rename-Stl }
             # '**/*.stl'      = { Get-ChildItem | Update-Stl }
         }
-        "$env:LOCALAPPDATA" = @{
-            'Temp\Neutron\*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
-        }
+        # "$env:LOCALAPPDATA" = @{
+        #     'Temp\Neutron\*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
+        # }
     }
 }
 
@@ -189,9 +189,9 @@ function Rename-Stl {
 process {
     Push-Location $file.DirectoryName
     try {
-        $new_file = $file.Name.Replace('(1)', '').Replace('.stl.stl', '.stl')
+        $new_file = $file.Name -replace "\.stl.*(\.stl)+", ".stl"
         Write-Host -ForegroundColor Cyan "Rename-Item '$($file.Name)' '$new_file' -Force"
-        Rename-Item $file.Name $new_file -Force
+        Move-Item $file.Name $new_file -Force
     } finally {
         Pop-Location
     }
