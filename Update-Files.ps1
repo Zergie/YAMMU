@@ -29,7 +29,7 @@ function Get-Files {
         STLs = @{
             '**/*.stl*.stl'  = { Get-ChildItem | Rename-Stl }
             '**/*(*)*.stl'  = { Get-ChildItem | Rename-Stl }
-            # '**/*.stl'      = { Get-ChildItem | Update-Stl }
+            '**/*.stl'      = { Get-ChildItem | Update-Stl }
         }
         # "$env:LOCALAPPDATA" = @{
         #     'Temp\Neutron\*.stl' = { Get-ChildItem | Copy-ToProjectFolder }
