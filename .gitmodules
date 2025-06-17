@@ -1,0 +1,3 @@
+[submodule "FusionAddons/FusionHeadless"]
+	path = FusionAddons/FusionHeadless
+	url = https://github.com/Zergie/FusionHeadless
