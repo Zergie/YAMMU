@@ -16,22 +16,24 @@ obj/yammu.files.json:
 	$(SEND) --get /files --jmespath "result[?parentFolder.name=='YAMMU']" --output $@
 
 obj/Assembly.json: obj/yammu.files.json
-	$(SEND) --file $< --jmespath "[?name == 'Assembly'].{open:id}" --output $@
+	$(SEND) --file $< --jmespath "[?name == 'Assembly'].{id:id}" \
+		| $(SEND) --get /files --file - --jmespath "result" --output $@
 
 obj/components.json: obj/Assembly.json
-	$(SEND) --get /document --file $< && \
-	$(SEND) --get /components --output $@
+	$(SEND) --file $< --jmespath "{open:id}" \
+		| $(SEND) --get /document --file - && \
+	$(SEND) --get /components --jmespath "result" --output $@
 
 obj/components.printed.json: obj/components.json
 	$(SEND) --file $< \
-		--jmespath "result[?bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']]" \
+		--jmespath "values(@)[?bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']]" \
 		--jmespath "[?!contains(name, 'Body')]" \
 		--jmespath "[].{id:id, name: name, count: count, bodies: bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)'].{id:id, name: name, color: color}}" --plain \
 		| $(SEND) --file - --match-with-files "STLs" --accent-color "C43527FF" --output $@
 
 obj/components.notprinted.json: obj/components.json
 	$(SEND) --file $< \
-		--jmespath "result[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
+		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
 		--output $@
 
 Images/render_1.png: obj/yammu.files.json
