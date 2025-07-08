@@ -1,3 +1,6 @@
+ASSEMBLY_ID := urn:adsk.wipprod:dm.lineage:m1GM3AuVSsGAUndgrxP6jw
+DIRECT_DRIVE_ID := urn:adsk.wipprod:dm.lineage:FxmAon5NSJe1PX8D-Y2Svg
+RENDER_QUALITY := 75
 PYTHON := python3
 SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless/send.py
 
@@ -9,19 +12,14 @@ all: \
 	Images/render_1.png
 
 FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py: FusionAddons/FusionHeadless/requirements.txt FusionAddons/FusionHeadless/Makefile
-	cd FusionAddons/FusionHeadless && make && cd ../..
+	cd FusionAddons/FusionHeadless && make && cd ../.. && touch $@
 
-obj/yammu.files.json: 
+obj/Assembly.json:
 	mkdir -p obj && \
-	$(SEND) --get /files --jmespath "result[?parentFolder.name=='YAMMU']" --output $@
-
-obj/Assembly.json: obj/yammu.files.json
-	$(SEND) --file $< --jmespath "[?name == 'Assembly'].{id:id}" \
-		| $(SEND) --get /files --file - --jmespath "result" --output $@
+	$(SEND) --get /files --data '{"id": "'"$(ASSEMBLY_ID)"'"}' --jmespath "result" --output $@
 
 obj/components.json: obj/Assembly.json
-	$(SEND) --file $< --jmespath "{open:id}" \
-		| $(SEND) --get /document --file - && \
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /components --jmespath "result" --output $@
 
 obj/components.printed.json: obj/components.json
@@ -36,73 +34,59 @@ obj/components.notprinted.json: obj/components.json
 		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
 		--output $@
 
-Images/render_1.png: obj/yammu.files.json
+Images/render_1.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Assembly'].{open:id}" \
-		--output $@
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Tools", "view": "Render_1", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Tools", "view": "Render_1", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/render_ebay.png: obj/yammu.files.json
+Images/render_ebay.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Assembly'].{open:id}" \
-		--output $@
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Electronincs Door", "view": "Render_ebay", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Electronincs Door", "view": "Render_ebay", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/render_heater.png: obj/yammu.files.json
+Images/render_heater.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Assembly'].{open:id}" \
-		--output $@
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Drawer", "view": "Render_heater", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Drawer", "view": "Render_heater", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/render_feeder.png: obj/yammu.files.json
+Images/render_feeder.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Direct Drive x4'].{open:id}" \
-		| $(SEND) --get /document --file -  && \
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "home", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"view": "home", "isolate": "Direct Drive x4", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/render_splitter.png: obj/yammu.files.json
+Images/render_splitter.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Direct Drive x4'].{open:id}" \
-		| $(SEND) --get /document --file -  && \
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "Render_Splitter", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"view": "Render_Splitter", "isolate": "Direct Drive x4", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/latch_lock.png: obj/yammu.files.json
+Images/latch_lock.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Direct Drive x4'].{open:id}" \
-		| $(SEND) --get /document --file -  && \
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "MotionStudy_Latch", "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"view": "MotionStudy_Latch", "isolate": "Direct Drive x4", "hide": "Filament Spools", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
-Images/render_cw2.png: obj/yammu.files.json
+Images/render_cw2.png: obj/Assembly.json
 	mkdir -p Images && \
-	$(SEND) --file $< \
-		--jmespath "[?name == 'Stealthburner_CW2_Filament_Sensor_ECAS'].{open:id}" \
-		| $(SEND) --get /document --file -  && \
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "home", "show": "all", "exposure": 8.2, "focalLength": 200, "quality": "75", "width": 400, "height": 400}' \
+		--data '{"view": "home", "isolate": "Stealthburner_CW2_Filament_Sensor_ECAS", "exposure": 8.2, "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
