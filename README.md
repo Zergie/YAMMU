@@ -7,7 +7,7 @@
 
 A Multi-Material Unit (MMU) for eight filaments that can also function as a filament dryer, keeping them dry while printing. The design is heavily inspired by Voron and their printers.
 
-<img src="Images/render_1_processed.png" width="400px"></img>
+<img src="Images/render_1.png" width="400px"></img>
 
 # Introduction
 Currently, this project aims to support loading and unloading filament before a print begins. While it is technically possible to use this version for multi-color or multi-material prints, this is not our focus at the moment. We plan to support both options in the future, once we have a reliable working prototype.
@@ -19,7 +19,7 @@ Currently, this project aims to support loading and unloading filament before a 
 - Separate electronics bay, similar to the one in the Voron 2.4
 - Strongly inspired by the Voron 2.4 and Trident, this design seamlessly blends in when placed next to a Voron printer. Additionally, it supports the use of Voron user modifications.
 
-<img src="Images/render_feeder_processed.png" width="400px"></img>
+<img src="Images/render_feeder.png" width="400px"></img>
 
 The YAMMU system features two identical feeders that take inspiration from Baboo Labs' "First Stage Loader." A key design advantage is the relatively short inlet tube, which simplifies the filament loading process and makes it exceptionally convenient. This practical design element sets it apart from other MMUs, as these feeders not only handle the initial loading of the filament but also seamlessly guide it directly into the extruder. As a result of this integrated functionality, a relatively large BLDC motor is required to ensure efficient operation and maintain consistent performance throughout the filament loading process. This approach not only enhances the user experience but also contributes to the overall reliability and effectiveness of the system.
 
@@ -27,19 +27,19 @@ The YAMMU system features two identical feeders that take inspiration from Baboo
 
 The filament is operated by two micro servos, which provide precise control and adjustability. These micro servos ensure that the filament functions efficiently and reliably. By utilizing these servos, the system achieves a high level of performance, making it suitable for various applications.
 
-<img src="Images/render_splitter_processed.png" width="400px"></img>
+<img src="Images/render_splitter.png" width="400px"></img>
 
 After passing through the feeder, the filament reaches the splitter. This component contains a filament switch that is triggered when a filament is present. If the switch does not trigger after loading a filament, it indicates a problem, and we can halt the print. Once any potential problems are cleared, the print can then be resumed.
 
-<img src="Images\render_cw2_processed.png" width="400px"></img>
+<img src="Images\render_cw2.png" width="400px"></img>
 
 Last stage for loading filament is the tool head. Here a filament sensor must be present so the YAMMU knows when to switch off the BLDC motor. A suitable modification for the Stealthburner / Clockwork 2 can be found [here](https://github.com/Enraged-Rabbit-Community/ERCF_v2/blob/master/Recommended_Options/Toolhead_Modifications/Stls/1_Toolhead_And_Entry_Sensors/SB_CW2_Body.stl) or [a modified version here](STLs/Toolhead_Modifications).
 
-<img src="Images/render_heater_processed.png" width="400px"></img>
+<img src="Images/render_heater.png" width="400px"></img>
 
 Naturally, the filament chamber is meticulously sealed to ensure optimal conditions, and it is precisely heated to maintain the necessary temperature for efficient operation.
 
-<img src="Images/render_ebay_processed.png" width="400px"></img>
+<img src="Images/render_ebay.png" width="400px"></img>
 
 And all electronic components are organized in an electronics bay, much like the design of a Voron printer.
 

@@ -1,15 +1,21 @@
 ASSEMBLY_ID := urn:adsk.wipprod:dm.lineage:m1GM3AuVSsGAUndgrxP6jw
 DIRECT_DRIVE_ID := urn:adsk.wipprod:dm.lineage:FxmAon5NSJe1PX8D-Y2Svg
-RENDER_QUALITY := 75
+RENDER_QUALITY := ShadedWithVisibleEdgesOnly
 PYTHON := python3
 SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless/send.py
 
-.PHONY: setup clean
+.PHONY: all setup clean
 all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	obj/components.printed.json \
 	obj/components.notprinted.json \
-	Images/render_1.png
+	Images/render_1.png \
+	Images/render_ebay.png \
+	Images/render_heater.png \
+	Images/render_feeder.png \
+	Images/render_splitter.png \
+	Images/latch_lock.png \
+	Images/render_cw2.png
 
 FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py: FusionAddons/FusionHeadless/requirements.txt FusionAddons/FusionHeadless/Makefile
 	cd FusionAddons/FusionHeadless && make && cd ../.. && touch $@
@@ -70,7 +76,7 @@ Images/render_splitter.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "Render_Splitter", "isolate": "Direct Drive x4", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"view": "Render_Splitter", "isolate": "Direct Drive x4", "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
@@ -78,7 +84,7 @@ Images/latch_lock.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "MotionStudy_Latch", "isolate": "Direct Drive x4", "hide": "Filament Spools", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"view": "MotionStudy_Latch", "isolate": "Direct Drive x4", "hide": ["Filament Spools", "latch_a", "latch_b", "latch_mirror_a", "latch_mirror_b"], "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
