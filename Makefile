@@ -8,7 +8,6 @@ SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless
 all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	obj/components.printed.json \
-	obj/components.notprinted.json \
 	CAD/Assembly.zip \
 	Manual/Assembly.pdf \
 	Images/render_1.png \
@@ -52,13 +51,16 @@ obj/components.printed.json: obj/components.json
 	$(SEND) --file $< \
 		--jmespath "values(@)[?bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']]" \
 		--jmespath "[?!contains(name, 'Body')]" \
-		--jmespath "[].{id:id, name: name, count: count, bodies: bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)'].{id:id, name: name, color: color}}" --plain \
-		| $(SEND) --file - --match-with-files "STLs" --accent-color "C43527FF" --output $@
+		--jmespath "[].{id:id, name: name, count: count, bodies: bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']}" --plain \
+		| $(SEND) --file - --match-with-files "STLs" --base-material "ABS Plastic (Voron Black)" --accent-material "ABS Plastic (Voron Red)" --output $@ && \
+	$(SEND) --file $@ --outdir obj/
 
-obj/components.notprinted.json: obj/components.json
-	$(SEND) --file $< \
-		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
-		--output $@
+
+
+# obj/components.notprinted.json: obj/components.json
+# 	$(SEND) --file $< \
+# 		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
+# 		--output $@
 
 
  ######     ###    ########  
