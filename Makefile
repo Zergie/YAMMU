@@ -4,11 +4,13 @@ RENDER_QUALITY := ShadedWithVisibleEdgesOnly
 PYTHON := python3
 SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless/send.py
 
-.PHONY: all setup clean
+.PHONY: all clean
 all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	obj/components.printed.json \
 	obj/components.notprinted.json \
+	CAD/Assembly.zip \
+	Manual/Assembly.pdf \
 	Images/render_1.png \
 	Images/render_ebay.png \
 	Images/render_heater.png \
@@ -17,12 +19,30 @@ all: \
 	Images/latch_lock.png \
 	Images/render_cw2.png
 
+
+ ######  ######## ######## ##     ## ########  
+##    ## ##          ##    ##     ## ##     ## 
+##       ##          ##    ##     ## ##     ## 
+ ######  ######      ##    ##     ## ########  
+      ## ##          ##    ##     ## ##        
+##    ## ##          ##    ##     ## ##        
+ ######  ########    ##     #######  ##        
+
 FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py: FusionAddons/FusionHeadless/requirements.txt FusionAddons/FusionHeadless/Makefile
 	cd FusionAddons/FusionHeadless && make && cd ../.. && touch $@
 
 obj/Assembly.json:
 	mkdir -p obj && \
 	$(SEND) --get /files --data '{"id": "'"$(ASSEMBLY_ID)"'"}' --jmespath "result" --output $@
+
+
+ ######  ######## ##        ######  
+##    ##    ##    ##       ##    ## 
+##          ##    ##       ##       
+ ######     ##    ##        ######  
+      ##    ##    ##             ## 
+##    ##    ##    ##       ##    ## 
+ ######     ##    ########  ######  
 
 obj/components.json: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
@@ -39,6 +59,48 @@ obj/components.notprinted.json: obj/components.json
 	$(SEND) --file $< \
 		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']]" \
 		--output $@
+
+
+ ######     ###    ########  
+##    ##   ## ##   ##     ## 
+##        ##   ##  ##     ## 
+##       ##     ## ##     ## 
+##       ######### ##     ## 
+##    ## ##     ## ##     ## 
+ ######  ##     ## ########  
+
+obj/Assembly.step: obj/Assembly.json
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
+	$(SEND) --get /export/step --output $@
+
+CAD/Assembly.zip: obj/Assembly.step
+	mkdir -p CAD && \
+	cd obj && \
+	zip Assembly.zip Assembly.step && \
+	cd .. && \
+	mv --force obj/Assembly.zip $@ 
+
+
+##     ##    ###    ##    ## ##     ##    ###    ##       
+###   ###   ## ##   ###   ## ##     ##   ## ##   ##       
+#### ####  ##   ##  ####  ## ##     ##  ##   ##  ##       
+## ### ## ##     ## ## ## ## ##     ## ##     ## ##       
+##     ## ######### ##  #### ##     ## ######### ##       
+##     ## ##     ## ##   ### ##     ## ##     ## ##       
+##     ## ##     ## ##    ##  #######  ##     ## ######## 
+
+Manual/Assembly.pdf: Manual/Assembly.odp
+	mkdir -p Manual && \
+	soffice --headless --convert-to pdf:writer_pdf_Export $< --outdir Manual/
+
+
+#### ##     ##    ###     ######   ########  ######  
+ ##  ###   ###   ## ##   ##    ##  ##       ##    ## 
+ ##  #### ####  ##   ##  ##        ##       ##       
+ ##  ## ### ## ##     ## ##   #### ######    ######  
+ ##  ##     ## ######### ##    ##  ##             ## 
+ ##  ##     ## ##     ## ##    ##  ##       ##    ## 
+#### ##     ## ##     ##  ######   ########  ######  
 
 Images/render_1.png: obj/Assembly.json
 	mkdir -p Images && \
@@ -97,16 +159,13 @@ Images/render_cw2.png: obj/Assembly.json
 		--output $@
 
 
-# obj/bom: obj/components.json
-# 	mkdir -p $@ && \
-# 	$(SEND) --file $< -x "$$.result[?(@.name =~ '(BHCS|ISO 7380-1)')]" --group 'name,.*M(\d+)\s*(x\s*\d+\.\d+\s*)?x\s*(\d+).*,M\1x\3 BHCS' --select 'name,count' --output $@/bhcs.json && \
-# 	$(SEND) --file $< -x "$$.result[?(@.name =~ '(SHCS|DIN 912)')]"    --group 'name,.*M(\d+)\s*(x\s*\d+\.\d+\s*)?x\s*(\d+).*,M\1x\3 SHCS' --select 'name,count' --output $@/shcs.json && \
-# 	$(SEND) --file $< -x "$$.result[?(@.name =~ 'Hex Nut')]"           --group 'name,.*M(\d+).*,M\1 Hex Nut'                               --select "name,count" --output $@/hex_nut.json && \
-# 	$(SEND) --file $< -x "$$.result[?(@.name =~ 'Ballbearing')]"       --group 'name'                                                      --select "name,count" --output $@/ballbearing.json
-
-
-dummy:
-	
+ ######  ##       ########    ###    ##    ## 
+##    ## ##       ##         ## ##   ###   ## 
+##       ##       ##        ##   ##  ####  ## 
+##       ##       ######   ##     ## ## ## ## 
+##       ##       ##       ######### ##  #### 
+##    ## ##       ##       ##     ## ##   ### 
+ ######  ######## ######## ##     ## ##    ## 
 
 clean:
 	cd FusionAddons/FusionHeadless && make clean && cd ../..
