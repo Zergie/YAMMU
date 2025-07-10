@@ -4,10 +4,11 @@ RENDER_QUALITY := ShadedWithVisibleEdgesOnly
 PYTHON := python3
 SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless/send.py
 
-.PHONY: all clean
+.PHONY: all clean obj/STLs update_assembly
 all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
-	obj/components.printed.json \
+	update_assembly \
+	obj/STLs \
 	CAD/Assembly.zip \
 	Manual/Assembly.pdf \
 	Images/render_1.png \
@@ -34,6 +35,9 @@ obj/Assembly.json:
 	mkdir -p obj && \
 	$(SEND) --get /files --data '{"id": "'"$(ASSEMBLY_ID)"'"}' --jmespath "result" --output $@
 
+update_assembly:
+	make -B obj/Assembly.json
+
 
  ######  ######## ##        ######  
 ##    ##    ##    ##       ##    ## 
@@ -50,10 +54,12 @@ obj/components.json: obj/Assembly.json
 obj/components.printed.json: obj/components.json
 	$(SEND) --file $< --match-with-files "STLs" --base-material "ABS Plastic (Voron Black)" --accent-material "ABS Plastic (Voron Red)" --output $@ && \
 	mkdir -p obj/STLs && \
-	$(SEND) --file $@ --outdir obj/STLs && \
-	$(SEND) --file $@ --eval "'\n'.join(['rm obj/STLs/' + x for x in [f for f in os.listdir('obj/STLs') if f.endswith('.json')] if not x in @.keys()])" \
+	$(SEND) --file $@ --outdir obj/STLs
+
+obj/STLs: obj/components.printed.json
+	$(SEND) --file $< --eval "'\n'.join(['rm $@/' + x.replace('.json', '.*') for x in [f for f in os.listdir('$@') if f.endswith('.json')] if not x in @.keys()])" \
 		| sh && \
-	$(SEND) --file $@ --eval "'make ' + ' '.join(['obj/STLs/' + x['stl'] for x in @.values()])" \
+	$(SEND) --file $< --eval "'make ' + ' '.join(['$@/' + x['stl'] for x in @.values()])" \
 		| sh
 
 obj/STLs/%.stl: obj/STLs/%.json
@@ -78,7 +84,7 @@ obj/STLs/%.stl: obj/STLs/%.json
 
 obj/Assembly.step: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
-	$(SEND) --get /export/step --output $@
+	$(SEND) --get /export --data '{"format": "step"}' --output $@
 
 CAD/Assembly.zip: obj/Assembly.step
 	mkdir -p CAD && \
@@ -113,7 +119,7 @@ Images/render_1.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Tools", "view": "Render_1", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Tools", "view": "Render_1", "focalLength": 100, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
@@ -121,7 +127,7 @@ Images/render_ebay.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Electronincs Door", "view": "Render_ebay", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Electronincs Door", "view": "Render_ebay", "focalLength": 100, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
@@ -129,7 +135,7 @@ Images/render_heater.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"show": "all", "hide": "Drawer", "view": "Render_heater", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"show": "all", "hide": "Drawer", "view": "Render_heater", "focalLength": 100, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
@@ -137,7 +143,7 @@ Images/render_feeder.png: obj/Assembly.json
 	mkdir -p Images && \
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /render \
-		--data '{"view": "home", "isolate": "Direct Drive x4", "focalLength": 200, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
+		--data '{"view": "home", "isolate": "Direct Drive x4", "focalLength": 100, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
 		--output $@
 
