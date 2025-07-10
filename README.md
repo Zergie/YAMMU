@@ -23,7 +23,7 @@ Currently, this project aims to support loading and unloading filament before a 
 
 The YAMMU system features two identical feeders that take inspiration from Baboo Labs' "First Stage Loader." A key design advantage is the relatively short inlet tube, which simplifies the filament loading process and makes it exceptionally convenient. This practical design element sets it apart from other MMUs, as these feeders not only handle the initial loading of the filament but also seamlessly guide it directly into the extruder. As a result of this integrated functionality, a relatively large BLDC motor is required to ensure efficient operation and maintain consistent performance throughout the filament loading process. This approach not only enhances the user experience but also contributes to the overall reliability and effectiveness of the system.
 
-<img src="Images\latch_lock.gif" width="400px"></img>
+<img src="Images\latch_lock.png" width="400px"></img>
 
 The filament is operated by two micro servos, which provide precise control and adjustability. These micro servos ensure that the filament functions efficiently and reliably. By utilizing these servos, the system achieves a high level of performance, making it suitable for various applications.
 
