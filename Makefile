@@ -48,14 +48,19 @@ obj/components.json: obj/Assembly.json
 	$(SEND) --get /components --jmespath "result" --output $@
 
 obj/components.printed.json: obj/components.json
-	$(SEND) --file $< \
-		--jmespath "values(@)[?bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']]" \
-		--jmespath "[?!contains(name, 'Body')]" \
-		--jmespath "[].{id:id, name: name, count: count, bodies: bodies[?material == 'ABS Plastic (Voron Black)' || material == 'ABS Plastic (Voron Red)']}" --plain \
-		| $(SEND) --file - --match-with-files "STLs" --base-material "ABS Plastic (Voron Black)" --accent-material "ABS Plastic (Voron Red)" --output $@ && \
-	$(SEND) --file $@ --outdir obj/
+	$(SEND) --file $< --match-with-files "STLs" --base-material "ABS Plastic (Voron Black)" --accent-material "ABS Plastic (Voron Red)" --output $@ && \
+	mkdir -p obj/STLs && \
+	$(SEND) --file $@ --outdir obj/STLs && \
+	$(SEND) --file $@ --eval "'\n'.join(['rm obj/STLs/' + x for x in [f for f in os.listdir('obj/STLs') if f.endswith('.json')] if not x in @.keys()])" \
+		| sh && \
+	$(SEND) --file $@ --eval "'make ' + ' '.join(['obj/STLs/' + x['stl'] for x in @.values()])" \
+		| sh
 
-
+obj/STLs/%.stl: obj/STLs/%.json
+	$(SEND) --file $< --jmespath "{component:component_id, body: bodies, format:'stl'}" \
+		| $(SEND) --get /export --file - --output $@ && \
+	$(SEND) --file $< --eval "f'stl_transform {@['rotation']} \"obj/STLs/{@['stl']}\" \"{@['path']}\" '" \
+	    | sh
 
 # obj/components.notprinted.json: obj/components.json
 # 	$(SEND) --file $< \

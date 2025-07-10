@@ -1,3 +1,6 @@
 {
-    "makefile.makePath": "wsl make"
+    "makefile.makePath": "wsl make",
+    "todo-tree.tree.showBadges": false,
+    "todo-tree.tree.showCountsInTree": true,
+    "todo-tree.tree.disableCompactFolders": false
 }
