@@ -4,13 +4,15 @@ RENDER_QUALITY := ShadedWithVisibleEdgesOnly
 PYTHON := python3
 SEND := FusionAddons/FusionHeadless/.venv/bin/python FusionAddons/FusionHeadless/send.py
 
-.PHONY: all clean obj/STLs update_assembly
+.PHONY: all images clean obj/STLs update_assembly
 all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	update_assembly \
 	obj/STLs \
 	CAD/Assembly.zip \
-	Manual/Assembly.pdf \
+	Manual/Assembly.pdf
+
+images: \
 	Images/render_1.png \
 	Images/render_ebay.png \
 	Images/render_heater.png \
@@ -97,6 +99,10 @@ obj/STLs/%.stl: obj/STLs/%.json
 obj/Assembly.step: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /export --data '{"format": "step"}' --output $@
+
+CAD/Assembly.f3d: obj/Assembly.json
+	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
+	$(SEND) --get /export --data '{"format": "f3d"}' --output $@
 
 CAD/Assembly.zip: obj/Assembly.step
 	mkdir -p $(dir $@) && \
