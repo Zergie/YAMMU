@@ -9,6 +9,7 @@ all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	update_assembly \
 	obj/STLs \
+	CAD/Assembly.f3d \
 	CAD/Assembly.zip \
 	Manual/Assembly.pdf
 
