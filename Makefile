@@ -202,7 +202,10 @@ Images/render_1.png: obj/Assembly.json
 	$(SEND) --get /render \
 		--data '{"show": "all", "hide": "Tools", "view": "Render_1", "focalLength": 100, "quality": "$(RENDER_QUALITY)", "width": 400, "height": 400}' \
 		--timeout 180 \
-		--output $@
+		--output $@ && \
+	convert $@ -fuzz 10% -trim +repage $@ && \
+	convert $@ -bordercolor white -border 200 $@ && \
+	convert $@ -gravity center -crop 400x400+0+0 +repage $@
 
 Images/render_ebay.png: obj/Assembly.json
 	mkdir -p $(dir $@) && \
