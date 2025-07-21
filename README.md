@@ -56,16 +56,16 @@ We are currently gearing up to release the first teaser, version 0.1. At this st
 Your input and feedback can make a huge difference, and we’re excited to have the community involved in this journey. Feel free to reach out to me directly if you're interested in contributing. And if you're comfortable with GitHub, pull requests are also more than welcome!
 
 ## v1.0
-![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)
-![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av1.0&label=todo&color=red)
+[![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av1.0&label=done&color=green)](https://github.com/Zergie/YAMMU/issues?q=is%3Aissue%20state%3Aclosed%20milestone%3Av1.0)
+[![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av1.0&label=todo&color=red)](https://github.com/Zergie/YAMMU/issues?q=is%3Aissue%20state%3Aopen%20milestone%3Av1.0)
 - Manual Loading, e.g. Loading and Unloading filament before a print is started
 - Automatic Loading, e.g. Loading and Unloading filament at the start of a print, for example as a "Filament Start Gcode" in OrcaSlicer
 - Heating the Chamber for Drying Filament
 - Electronics on Custom PCB
 
 ## v2.0
-![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av2.0&label=done&color=green)
-![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av2.0&label=todo&color=red)
+[![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aclosed%20milestone%3Av2.0&label=done&color=green)](https://github.com/Zergie/YAMMU/issues?q=is%3Aissue%20state%3Aclosed%20milestone%3Av2.0)
+[![GitHub issue custom search](https://img.shields.io/github/issues-search?query=repo%3AZergie%2FYAMMU%20state%3Aopen%20milestone%3Av2.0&label=todo&color=red)](https://github.com/Zergie/YAMMU/issues?q=is%3Aissue%20state%3Aopen%20milestone%3Av2.0)
 - All of the above
 - Supporting the Extruder via the BLDC motor. When the extruder pulls the filament, the BLDC motor pushes it, and vice versa.
 
