@@ -7,7 +7,11 @@
             "label": "Deploy and Restart Klipper",
             "type": "shell",
             "command": "pwsh -NoProfile \"${workspaceFolder}/Firmware/Deploy-Project.ps1\"",
-            "problemMatcher": []
-        },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
     ]
 }

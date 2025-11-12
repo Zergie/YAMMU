@@ -16,12 +16,12 @@ Write-Host -ForegroundColor Cyan "Restarting klipper on ${klipper_url} " -NoNewl
 ssh ${klipper_user}@${klipper_url} systemctl restart klipper
 
 $success = $false
-0..60 | ForEach-Object {
+0..30 | ForEach-Object {
     if (!$success) {
         Write-Host -ForegroundColor Cyan -NoNewline "."
         Start-Sleep -Seconds 1
         try {
-            $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 2
+            $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
             if ($response -and $response.result.state -eq "ready") {
                 Write-Host -ForegroundColor Green " $($response.result.state_message)"
                 $success = $true
@@ -30,6 +30,10 @@ $success = $false
             # Ignore exceptions and continue waiting
         }
     }
+}
+if (-not $success) {
+    Write-Host -ForegroundColor Red " $($response.result.state_message)"
+    exit 1
 }
 
 $last_message = (Invoke-RestMethod -Uri http://${klipper_url}:7125/server/gcode_store?count=10).result.gcode_store |
