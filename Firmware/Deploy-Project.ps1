@@ -1,63 +1,104 @@
 [CmdletBinding()]
 param()
-$klipper_url = "trident.local"
-$klipper_user = "biqu"
-$gcode = @(
-    "QUERY_BE"
-)
+$klipper_url = "mkspi"
+$klipper_user = "mks"
+$gcode = $(try { Get-Content $PSScriptRoot\startup.gcode -Encoding utf8 } catch { @() })
 
-Write-Host
-Write-Host -ForegroundColor Cyan "Installing on ${klipper_url}"
-scp $PSScriptRoot\multi_material_unit.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/multi_material_unit.py
-scp ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg "$PSScriptRoot\mmu-$((Get-Date).ToString('yyyyMMdd_HHmmss')).cfg.bak"
+#region Helper Functions
+function ➡️ () { Write-Host -ForegroundColor Cyan "`n$args" }
+function ➡️➡️ () { Write-Host -NoNewline -ForegroundColor Cyan $args }
+function 🔴 () { Write-Host -ForegroundColor Red $args }
+function 🟡 () { Write-Host -NoNewline -ForegroundColor Yellow $args }
+function 🟢 () { Write-Host -ForegroundColor Green $args }
+function 🔵 () { Write-Host -ForegroundColor Blue $args }
+
+function scp {
+    $p = Start-Process -NoNewWindow -PassThru -FilePath "scp" -ArgumentList $args
+    $p.WaitForExit()
+    if ($p.ExitCode -ne 0) {
+        🔴 "scp $command"
+        🔴 "SCP command failed with exit code $($p.ExitCode | ConvertTo-Json)"
+        exit 1
+    }
+}
+
+function ssh {
+    $p = Start-Process -NoNewWindow -PassThru -FilePath "ssh" -ArgumentList $args
+    $p.WaitForExit()
+    if ($p.ExitCode -ne 0) {
+        🔴 "ssh $command"
+        🔴 "SSH command failed with exit code $($p.ExitCode | ConvertTo-Json)"
+        exit 1
+    }
+}
+
+#endregion
+
+➡️ "Installing on ${klipper_url}"
+scp $PSScriptRoot\*.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/
 scp $PSScriptRoot\mmu.cfg ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg
 
-Write-Host -ForegroundColor Cyan "Restarting klipper on ${klipper_url} " -NoNewline
+➡️➡️ "Restarting klipper on ${klipper_url} "
+ssh ${klipper_user}@${klipper_url} rm printer_data/logs/klippy.log
 ssh ${klipper_user}@${klipper_url} systemctl restart klipper
 
-$success = $false
+$finished = $false
 0..30 | ForEach-Object {
-    if (!$success) {
+    if (!$finished) {
         Write-Host -ForegroundColor Cyan -NoNewline "."
         Start-Sleep -Seconds 1
         try {
             $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
             if ($response -and $response.result.state -eq "ready") {
-                Write-Host -ForegroundColor Green " $($response.result.state_message)"
-                $success = $true
+                🟢 " $($response.result.state)"
+                $finished = $true
+            } elseif ($response -and $response.result.state -ne "startup") {
+                🔴 " $($response.result.state) "
+                🔴 ""
+                🔴 "$($response.result.state_message)"
+                🔴 ""
+
+                # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
+                exit 1
             }
         } catch {
             # Ignore exceptions and continue waiting
         }
     }
 }
-if (-not $success) {
-    Write-Host -ForegroundColor Red " $($response.result.state_message)"
+if (!$finished) {
+    🔴 " Timeout: $($response.result.state)"
+    🔴 ""
+    # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
     exit 1
 }
 
 $last_message = (Invoke-RestMethod -Uri http://${klipper_url}:7125/server/gcode_store?count=10).result.gcode_store |
                     Select-Object -Last 1
 
+➡️➡️ "Sending startup G-Code to ${klipper_url} "
 $gcode |
+    Where-Object { $_.Trim().Length -gt 0 } |
     ForEach-Object {
-        Write-Host -ForegroundColor Cyan -NoNewline "Running gcode '$_' .. "
+        Write-Host -ForegroundColor Cyan -NoNewline "."
         "http://${klipper_url}:7125/printer/gcode/script?script=$_"
     } |
     ForEach-Object {
-        $uri = $_
-        Invoke-RestMethod -Method Post -Uri $uri -SkipHttpErrorCheck |
-            ForEach-Object {
-                Write-Host -NoNewline ' '
-                if ($null -eq $_.error) {
-                    Write-Host -ForegroundColor Green $_.result
-                } elseif ($_.error.message) {
-                    Write-Host -ForegroundColor Red ($_.error.message | ConvertFrom-Json).message
-                }
-                (Invoke-RestMethod -Uri http://${klipper_url}:7125/server/gcode_store?count=10).result.gcode_store |
-                    Where-Object time -gt $last_message.time -OutVariable messages |
-                    ForEach-Object message |
-                    Write-Host -ForegroundColor Yellow
-                $last_message = $messages | Select-Object -Last 1
-            }
+        Invoke-RestMethod -Method Post -Uri $_ -SkipHttpErrorCheck -ErrorAction SilentlyContinue | Out-Null
     }
+🟢 " ok"
+
+(Invoke-RestMethod -Uri http://${klipper_url}:7125/server/gcode_store?count=10).result.gcode_store |
+    Where-Object time -ge $last_message.time -OutVariable messages |
+    ForEach-Object { $_.message.Trim() } |
+    ForEach-Object {
+        if ($_.StartsWith("!!")) {
+            🔴 $_
+        } elseif ($_.StartsWith("//") -or $_.StartsWith("echo:")) {
+            Write-Host $_
+        } else {
+            🔵 $_
+        }
+    }
+
+Write-Host ""
