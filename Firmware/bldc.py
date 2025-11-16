@@ -19,7 +19,7 @@ else:
     MCU_pwm = object
 
 CYCLE_TIME = 0.00005  # 20 kHz
-OFF_BELOW = 0.3
+OFF_BELOW = 0.5
 TACHOMETER_WATCH_INTERVAL = 0.5
 TACHOMETER_ERROR_TIMEOUT = TACHOMETER_WATCH_INTERVAL * 3
 TACHOMETER_POLL_INTERVAL = 0.0002
@@ -43,6 +43,7 @@ class BldcMotor:
         self.pwm_pin.setup_start_value(0., 0.)
 
         self.dir_pin:MCU_digital_out = ppins.setup_pin('digital_out', config.get('direction_pin'))
+        self.dir_pin.setup_start_value(0., .0)
 
         tachometer_pin = config.get('tachometer_pin')
         self.ppr = config.getint('tachometer_ppr', TACHOMETER_PPR, minval=1)
@@ -53,8 +54,7 @@ class BldcMotor:
 
         self.speed_rq = output_pin.GCodeRequestQueue(config, self.mcu, self._set_value)
         self.tacho_rq = output_pin.GCodeRequestQueue(config, self.mcu, self._watch_rpm)
-        self.printer.register_event_handler("klippy:shutdown", self._handle_shutdown)
-        self.last_value = None
+        self.last_value = 0.0
 
         # Register commands
         gcode: GCodeDispatch = self.printer.lookup_object('gcode')
@@ -66,12 +66,12 @@ class BldcMotor:
         self.rpm = self._freq_counter.get_frequency() * 30. / self.ppr
         speed = self.last_value if self.last_value is not None else 0.0
 
-        logging.info(f"BLDC Motor '{self.name}': speed={speed:.3f}, rpm={self.rpm:.1f}")
+        logging.info(f"{print_time:.1f} [watchdog] BLDC Motor '{self.name}': speed={speed:.3f}, rpm={self.rpm:.1f}")
         error = None
-        if speed < self.off_below and self.rpm > 5.:
-            error = f"Bldc Motor '{self.name}' should be off but reports non-zero RPM"
-        elif speed >= self.off_below and self.rpm < 5.:
-            error = f"Bldc Motor '{self.name}' should be on but reports zero RPM"
+        if abs(speed) < self.off_below and self.rpm > 5.:
+            error = f"BLDC Motor '{self.name}' should be off but reports non-zero RPM"
+        elif abs(speed) >= self.off_below and self.rpm < 5.:
+            error = f"BLDC Motor '{self.name}' should be on but reports zero RPM"
 
         if error and self.tachometer_error == None:
             self.tachometer_error = print_time
@@ -91,19 +91,31 @@ class BldcMotor:
             return "discard", 0.
 
     def _set_value(self, print_time:float, value:float):
-        if value < self.off_below:
+        if abs(value) < self.off_below:
             value = 0.
-        if value == self.last_value:
-            return "discard", 0.
-        self.last_value = value
-        self.pwm_pin.set_pwm(print_time, value)
-
-    def _handle_shutdown(self, print_time:float):
-        self.speed_rq.send_async_request(0., print_time)
+        if value != self.last_value:
+            if (self.last_value == 0 or self.last_value > 0) and value < 0:
+                logging.info(f"{print_time:.1f} BLDC Motor '{self.name}': Changing direction to reverse")
+                self.dir_pin.set_digital(print_time, 1)
+                self.last_value = -.001
+                return "delay", 0.1  # allow time for direction change
+            elif (self.last_value == 0 or self.last_value < 0) and value > 0:
+                logging.info(f"{print_time:.1f} BLDC Motor '{self.name}': Changing direction to forward")
+                self.dir_pin.set_digital(print_time, 0)
+                self.last_value = .001
+                return "delay", 0.1  # allow time for direction change
+            self.last_value = value
+            logging.info(f"{print_time:.1f} BLDC Motor '{self.name}': Setting speed to {value:.3f}")
+            self.pwm_pin.set_pwm(print_time, abs(value))
+        return "discard", 0.
 
     def set_speed(self, value:float, print_time:float=None):
+        if print_time is None:
+            min_sched_time = self.mcu.min_schedule_time()
+            systime = self.printer.get_reactor().monotonic()
+            print_time = self.mcu.estimated_print_time(systime + min_sched_time)
         self.speed_rq.send_async_request(value, print_time)
-        self.tacho_rq.queue_gcode_request(value)
+        self.tacho_rq.send_async_request(value, print_time)
 
     def set_speed_from_command(self, value:float):
         self.speed_rq.queue_gcode_request(value)
@@ -111,13 +123,14 @@ class BldcMotor:
 
     def get_status(self, eventtime):
         return {
+            'direction': 'forward' if self.dir_pin.get_digital() == 0 else 'reverse',
             'speed': self.last_value,
             'rpm': self.rpm,
         }
 
-    cmd_SET_BLDC_help = "Set BLDC motor speed (0.0 to 1.0)"
+    cmd_SET_BLDC_help = "Set BLDC motor speed (-1.0 to 1.0)"
     def cmd_SET_BLDC(self, gcmd:GCodeDispatch):
-        speed = gcmd.get_float('SPEED', None, minval=0.0, maxval=1.0)
+        speed = gcmd.get_float('SPEED', None, minval=-1.0, maxval=1.0)
         self.set_speed_from_command(speed)
 
 def load_config_prefix(config):

@@ -38,8 +38,13 @@ function ssh {
 scp $PSScriptRoot\*.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/
 scp $PSScriptRoot\mmu.cfg ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg
 
-➡️➡️ "Restarting klipper on ${klipper_url} "
+➡️➡️ "Clearing klippy log on ${klipper_url} "
+ssh ${klipper_user}@${klipper_url} touch printer_data/logs/klippy.log
+Write-Host -ForegroundColor Cyan -NoNewline "."
 ssh ${klipper_user}@${klipper_url} rm printer_data/logs/klippy.log
+🟢 " ok"
+
+➡️➡️ "Restarting klipper on ${klipper_url} "
 ssh ${klipper_user}@${klipper_url} systemctl restart klipper
 
 $finished = $false
@@ -54,12 +59,29 @@ $finished = $false
                 $finished = $true
             } elseif ($response -and $response.result.state -ne "startup") {
                 🔴 " $($response.result.state) "
-                🔴 ""
-                🔴 "$($response.result.state_message)"
+                🔴 "$($response.result.state_message.Trim())"
                 🔴 ""
 
-                # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
-                exit 1
+                if ($response.result.state -eq "error" -and $response.result.state_message -like '*"FIRMWARE_RESTART"*') {
+                    ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
+                    Invoke-RestMethod `
+                        -Method Post `
+                        -Uri "http://${klipper_url}:7125/printer/gcode/script?script=FIRMWARE_RESTART" `
+                        -SkipHttpErrorCheck `
+                        -ErrorAction SilentlyContinue | Out-Null
+
+                    $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
+                    if ($response -and $response.result.state -eq "ready") {
+                        🟢 " $($response.result.state)"
+                        $finished = $true
+                    } else {
+                        🔴 " $($response.result.state) "
+                    }
+                } else {
+                    # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
+                    exit 1
+                }
+
             }
         } catch {
             # Ignore exceptions and continue waiting
@@ -72,6 +94,7 @@ if (!$finished) {
     # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
     exit 1
 }
+
 
 $last_message = (Invoke-RestMethod -Uri http://${klipper_url}:7125/server/gcode_store?count=10).result.gcode_store |
                     Select-Object -Last 1
