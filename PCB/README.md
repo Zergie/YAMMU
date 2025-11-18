@@ -15,18 +15,6 @@ The files here may not be up to date.
 - Neopixel RGB Header (with one Neopixel onboard)
 - 12 V Power Input
 
-## USB
-The board can be connected using either the STM32 USB port or a CH340 USB serial IC. If you're opting for the STM32 USB port, do not popolate these SMD pads:
-![image](https://github.com/user-attachments/assets/38513605-c38f-48f0-9bbe-68923505209e)
-
-If you choose to use the CH340 USB Serial, connect it by linking pins PA11 and PA12 with the pin headers. Just bridge the solder pads at this spot:
-![image](https://github.com/user-attachments/assets/35ac5567-3317-4076-a89c-7117c5c36658)
-
-## I2C
-The board features an I2C booster circuit that makes it easier to connect I2C sensors, such as humidity sensors like the AHT20, even with long cables. This setup lets you monitor humidity. To cut costs, you can choose not to populate these SMD pads:
-
-![image](https://github.com/user-attachments/assets/1506159f-0504-4d30-831f-f1ef7b11003c)
-
 ## Soldering Assistant Tool
 In EasyEda Pro, you can use the Soldering Assistant Tool. To find it, open your main PCB file, "PCB_1." Then, click on "Tools" and select "Soldering Assistant Tool."
 
