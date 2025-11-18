@@ -62,7 +62,7 @@ $finished = $false
                 🔴 "$($response.result.state_message.Trim())"
                 🔴 ""
 
-                if ($response.result.state -eq "error" -and $response.result.state_message -like '*"FIRMWARE_RESTART"*') {
+                if ($response.result.state -in @("error", "shutdown") -and $response.result.state_message -like '*"FIRMWARE_RESTART"*') {
                     ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
                     Invoke-RestMethod `
                         -Method Post `
@@ -123,5 +123,8 @@ $gcode |
             🔵 $_
         }
     }
+
+(Invoke-RestMethod "http://${klipper_url}:7125/printer/objects/query?multi_material_unit").result.status |
+        ForEach-Object multi_material_unit
 
 Write-Host ""
