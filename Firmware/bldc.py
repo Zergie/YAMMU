@@ -41,7 +41,8 @@ class BldcMotor:
         self.reactor: Reactor = self.printer.get_reactor()
         ppins: PrinterPins = self.printer.lookup_object('pins')
 
-        self.off_below = config.getfloat(f'off_below', default=OFF_BELOW, minval=0., maxval=1.)
+        self.off_below = config.getfloat(f'off_below', default=OFF_BELOW,
+                                         minval=0., maxval=1.)
         cycle_time = config.getfloat(f'cycle_time', CYCLE_TIME)
 
         self.pwm_pin: MCU_pwm = ppins.setup_pin('pwm', config.get('pin'))
@@ -51,18 +52,25 @@ class BldcMotor:
         self.pwm_pin.setup_max_duration(0.)
         self.pwm_pin.setup_start_value(0., 0.)
 
-        self.dir_pin:MCU_digital_out = ppins.setup_pin('digital_out', config.get('direction_pin'))
+        self.dir_pin:MCU_digital_out = \
+            ppins.setup_pin('digital_out', config.get('direction_pin'))
         self.dir_pin.setup_start_value(0., .0)
         self.dir_pin.setup_max_duration(0.)
         self.direction = FORWARD
 
         tachometer_pin = config.get('tachometer_pin')
         self.ppr = config.getint('tachometer_ppr', TACHOMETER_PPR, minval=1)
-        poll_interval = config.getfloat('tachometer_poll_interval', TACHOMETER_POLL_INTERVAL, above=0.)
-        self._freq_counter = pulse_counter.FrequencyCounter(self.printer, tachometer_pin, TACHOMETER_SAMPLE_TIME, poll_interval)
+        poll_interval = config.getfloat('tachometer_poll_interval',
+                                        TACHOMETER_POLL_INTERVAL, above=0.)
+        self._freq_counter = \
+            pulse_counter.FrequencyCounter(self.printer,
+                                           tachometer_pin,
+                                           TACHOMETER_SAMPLE_TIME,
+                                           poll_interval)
         self.rpm = 0.0
 
-        self.gcrq = output_pin.GCodeRequestQueue(config, self.mcu, self._set_value)
+        self.gcrq = output_pin.GCodeRequestQueue(config, self.mcu,
+                                                 self._set_value)
         self.sample_timer = self.reactor.register_timer(self._watch_rpm)
         self.last_value = 0.0
 
@@ -82,11 +90,17 @@ class BldcMotor:
         speed = self.last_value if self.last_value is not None else 0.0
 
         print_time = self.mcu.estimated_print_time(eventtime)
-        self._debug_msg(f"{print_time:.1f} [watchdog] BLDC Motor '{self.name}': speed={speed:.3f}, rpm={self.rpm:.1f}")
+        self._debug_msg(
+            f"{print_time:.1f} [watchdog] BLDC Motor '{self.name}': " +
+            f"speed={speed:.3f}, rpm={self.rpm:.1f}")
         if abs(speed) < self.off_below and self.rpm > TACHOMETER_MIN_RPM:
-            self.printer.invoke_shutdown(f"BLDC Motor '{self.name}' should be off but reports non-zero RPM")
+            pass
+            self.printer.invoke_shutdown(
+                f"BLDC Motor '{self.name}' is OFF but reports non-zero RPM")
         elif abs(speed) >= self.off_below and self.rpm < TACHOMETER_MIN_RPM:
-            self.printer.invoke_shutdown(f"BLDC Motor '{self.name}' should be on but reports zero RPM")
+            pass
+            self.printer.invoke_shutdown(
+                f"BLDC Motor '{self.name}' is ON but reports zero RPM")
         elif abs(speed) < self.off_below:
             return self.reactor.NEVER
         else:
@@ -99,19 +113,21 @@ class BldcMotor:
             value = 0.
         if value != self.last_value:
             if (self.last_value == 0 or self.last_value > 0) and value < 0:
-                self._debug_msg(f"Changing direction to reverse")
+                self._debug_msg(f"{print_time:.2f}, Changing direction to reverse")
                 self.dir_pin.set_digital(print_time, 1)
                 self.direction = REVERSE
+                print_time += self.mcu.min_schedule_time()
             elif (self.last_value == 0 or self.last_value < 0) and value > 0:
-                self._debug_msg(f"Changing direction to forward")
+                self._debug_msg(f"{print_time:.2f}, Changing direction to forward")
                 self.dir_pin.set_digital(print_time, 0)
                 self.direction = FORWARD
+                print_time += self.mcu.min_schedule_time()
 
-            self._debug_msg(f"Setting speed to {value:.3f}")
+            self._debug_msg(f"{print_time:.2f}, Setting speed to {value:.3f}")
             self.last_value = value
             self.pwm_pin.set_pwm(print_time, abs(value))
 
-            self._debug_msg(f"Scheduling RPM watch")
+            self._debug_msg(f"{print_time:.2f}, Scheduling RPM watch")
             waketime = self.reactor.monotonic() + TACHOMETER_STARTUP_DELAY
             self.reactor.update_timer(self.sample_timer, waketime)
 
@@ -121,7 +137,7 @@ class BldcMotor:
     def speed(self) -> float:
         return self.last_value
 
-    def set_speed(self, value:float, print_time:float=None):
+    def set_speed(self, value:float, print_time:float|None=None):
         if print_time is None:
             min_sched_time = self.mcu.min_schedule_time()
             systime = self.printer.get_reactor().monotonic()

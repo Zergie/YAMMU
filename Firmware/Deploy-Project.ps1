@@ -127,4 +127,5 @@ $gcode |
 (Invoke-RestMethod "http://${klipper_url}:7125/printer/objects/query?multi_material_unit").result.status |
         ForEach-Object multi_material_unit
 
-Write-Host ""
+# ➡️ "Tailing klippy log on ${klipper_url} "
+# ssh ${klipper_user}@${klipper_url} tail -f printer_data/logs/klippy.log
