@@ -1,2 +1,9 @@
+$ ignore backup files
 *.bak
+
+# ignore G-code and Jupyter Notebook files used for testing
 *.gcode
+*.ipynb
+
+# do not ignore Python cache files
+__pycache__
