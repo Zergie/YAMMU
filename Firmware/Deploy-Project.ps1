@@ -12,7 +12,7 @@ function 🟡 () { Write-Host -NoNewline -ForegroundColor Yellow $args }
 function 🟢 () { Write-Host -ForegroundColor Green $args }
 function 🔵 () { Write-Host -ForegroundColor Blue $args }
 
-function scp {
+function Invoke-SCP {
     $p = Start-Process -NoNewWindow -PassThru -FilePath "scp" -ArgumentList $args
     $p.WaitForExit()
     if ($p.ExitCode -ne 0) {
@@ -22,7 +22,7 @@ function scp {
     }
 }
 
-function ssh {
+function Invoke-SSH {
     $p = Start-Process -NoNewWindow -PassThru -FilePath "ssh" -ArgumentList $args
     $p.WaitForExit()
     if ($p.ExitCode -ne 0) {
@@ -35,19 +35,20 @@ function ssh {
 #endregion
 
 ➡️ "Installing on ${klipper_url}"
-scp $PSScriptRoot\*.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/
-scp $PSScriptRoot\mmu.cfg ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg
+Invoke-SCP $PSScriptRoot\*.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/
+Invoke-SCP $PSScriptRoot\mmu.cfg ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg
 
 ➡️➡️ "Clearing klippy log on ${klipper_url} "
-ssh ${klipper_user}@${klipper_url} touch printer_data/logs/klippy.log
+Invoke-SSH ${klipper_user}@${klipper_url} touch printer_data/logs/klippy.log
 Write-Host -ForegroundColor Cyan -NoNewline "."
-ssh ${klipper_user}@${klipper_url} rm printer_data/logs/klippy.log
+Invoke-SSH ${klipper_user}@${klipper_url} rm printer_data/logs/klippy.log
 🟢 " ok"
 
 ➡️➡️ "Restarting klipper on ${klipper_url} "
-ssh ${klipper_user}@${klipper_url} systemctl restart klipper
+Invoke-SSH ${klipper_user}@${klipper_url} systemctl restart klipper
 
 $finished = $false
+$firmware_restart_count = 0
 0..30 | ForEach-Object {
     if (!$finished) {
         Write-Host -ForegroundColor Cyan -NoNewline "."
@@ -63,23 +64,30 @@ $finished = $false
                 🔴 ""
 
                 if ($response.result.state -in @("error", "shutdown") -and $response.result.state_message -like '*"FIRMWARE_RESTART"*') {
-                    ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
-                    Invoke-RestMethod `
-                        -Method Post `
-                        -Uri "http://${klipper_url}:7125/printer/gcode/script?script=FIRMWARE_RESTART" `
-                        -SkipHttpErrorCheck `
-                        -ErrorAction SilentlyContinue | Out-Null
+                    if ($firmware_restart_count -lt 1) {
+                        ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
+                        $firmware_restart_count += 1
+                        Invoke-RestMethod `
+                            -Method Post `
+                            -Uri "http://${klipper_url}:7125/printer/gcode/script?script=FIRMWARE_RESTART" `
+                            -SkipHttpErrorCheck `
+                            -ErrorAction SilentlyContinue | Out-Null
 
-                    $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
-                    if ($response -and $response.result.state -eq "ready") {
-                        🟢 " $($response.result.state)"
-                        $finished = $true
-                    } else {
-                        🔴 " $($response.result.state) "
+                        $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
+                        if ($response -and $response.result.state -eq "ready") {
+                            🟢 " $($response.result.state)"
+                            $finished = $true
+                        } else {
+                            🔴 " $($response.result.state) "
+                        }
                     }
-                } else {
-                    # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
-                    exit 1
+                    else {
+                        🔴 " $($response.result.state) "
+                        ssh ${klipper_user}@${klipper_url} "cat printer_data/logs/klippy.log" |
+                            Select-String "Traceback" -Context 5,20 |
+                            Select-Object -First 1
+                        exit 1
+                    }
                 }
 
             }
