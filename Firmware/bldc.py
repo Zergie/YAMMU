@@ -98,10 +98,10 @@ class BldcMotor:
         speed = self.last_value if self.last_value is not None else 0.0
 
         print_time = self.mcu.estimated_print_time(eventtime)
-        self._debug_msg(
-            f"{print_time:.1f} [watchdog] BLDC Motor '{self.name}': "
-            + f"speed={speed:.3f}, rpm={self.rpm:.1f}"
-        )
+        # self._debug_msg(
+        #     f"{print_time:.1f} [watchdog] BLDC Motor '{self.name}': "
+        #     + f"speed={speed:.3f}, rpm={self.rpm:.1f}"
+        # )
         if abs(speed) < self.off_below and self.rpm > TACHOMETER_MIN_RPM:
             self._set_value(print_time, 0.0)
             raise self.gcode.error(
@@ -121,23 +121,23 @@ class BldcMotor:
             value = 0.0
         if value != self.last_value:
             if (self.last_value == 0 or self.last_value > 0) and value < 0:
-                self._debug_msg(
-                    f"{print_time:.2f}, Changing direction to reverse")
+                # self._debug_msg(
+                #     f"{print_time:.2f}, Changing direction to reverse")
                 self.dir_pin.set_digital(print_time, 1)
                 self.direction = REVERSE
                 print_time += self.mcu.min_schedule_time()
             elif (self.last_value == 0 or self.last_value < 0) and value > 0:
-                self._debug_msg(
-                    f"{print_time:.2f}, Changing direction to forward")
+                # self._debug_msg(
+                #     f"{print_time:.2f}, Changing direction to forward")
                 self.dir_pin.set_digital(print_time, 0)
                 self.direction = FORWARD
                 print_time += self.mcu.min_schedule_time()
 
-            self._debug_msg(f"{print_time:.2f}, Setting speed to {value:.3f}")
+            # self._debug_msg(f"{print_time:.2f}, Setting speed to {value:.3f}")
             self.last_value = value
             self.pwm_pin.set_pwm(print_time, abs(value))
 
-            self._debug_msg(f"{print_time:.2f}, Scheduling RPM watch")
+            # self._debug_msg(f"{print_time:.2f}, Scheduling RPM watch")
             waketime = self.reactor.monotonic() + TACHOMETER_STARTUP_DELAY
             self.reactor.update_timer(self.sample_timer, waketime)
 

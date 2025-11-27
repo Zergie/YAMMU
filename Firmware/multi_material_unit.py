@@ -33,11 +33,12 @@ TIMEOUT_LOADING = 10.0
 TIMEOUT_HOMEING = 10.0
 TIMEOUT_1H = 3600.0  # 1 hour
 
-BELAY_REPORT_TIME = 0.300
+BELAY_REPORT_TIME = 0.010
 BELAY_SAMPLE_TIME = 0.001
 BELAY_SAMPLE_COUNT = 6
 BELAY_SETPOINT = 0.5
 BELAY_MAX_DELTA = 0.2
+BELAY_MOTOR_SPEED = 1.0
 PID_PARAM_BASE = 255.
 
 ENDSTOP_SAMPLE_TIME = 0.1
@@ -185,7 +186,10 @@ class MultiMaterialUnit:
         return {
             "belay_active": self.be_active,
             "belay_setpoint": self.be_setpoint,
-            "belay_control": self.be_control.get_status(eventtime),
+            "belay_control": {
+                "name": type(self.be_control).__name__,
+                **self.be_control.get_status(eventtime)
+            },
             "current_tool": self.current_tool,
             "current_motor": self.current_motor.name if self.current_motor \
                 else None,
@@ -236,7 +240,8 @@ class MultiMaterialUnit:
                     print_time: float | None = None) -> None:
         servo_index = None if tool is None else (tool - MMU_TOOL_NUM_START) // 2
 
-        for i, servo in [x for x in enumerate(self.servos) if x[0] != servo_index]:
+        for i, servo in [x for x in enumerate(self.servos) \
+            if x[0] != servo_index]:
             angle = self.servo_initial_angles[i]
             servo.set_angle(angle, print_time)
 
@@ -244,6 +249,9 @@ class MultiMaterialUnit:
             servo = self.servos[servo_index]
             angle = float(self.servo_angles[tool])
             servo.set_angle(angle, print_time)
+
+        if tool is None:
+            self.set_motor_speed(0.0)
 
         self.current_tool = tool
 
@@ -384,27 +392,28 @@ class MultiMaterialUnit:
 class MMUControlBangBang(MMUControlBase):
     def __init__(self, mmu:MultiMaterialUnit, config:ConfigWrapper):
         MMUControlBase.__init__(self, mmu, config)
-        self.is_moving = False
         self.max_delta = config.getfloat(
             "belay_max_delta", BELAY_MAX_DELTA, minval=0.0, maxval=1.0
         )
+        self.motor_speed = config.getfloat(
+            "belay_motor_speed", BELAY_MOTOR_SPEED, minval=0.0, maxval=1.0
+        )
+        self.debug = {}
     def get_status(self, eventtime):
         return {
             **MMUControlBase.get_status(self, eventtime),
         }
     def update(self, read_time: float, value: float):
         distance = abs(value - self.mmu.be_setpoint)
+
         if distance > self.max_delta:
             target_value = self.mmu.be_setpoint
 
-        if self.is_moving and value >= target_value+self.max_delta:
-            self.is_moving = True
-            self.mmu.set_motor_speed(-1.0)
-        elif not self.is_moving and value <= target_value-self.max_delta:
-            self.is_moving = True
-            self.mmu.set_motor_speed(1.0)
+            if value >= target_value+self.max_delta:
+                self.mmu.set_motor_speed(-self.motor_speed)
+            elif value <= target_value-self.max_delta:
+                self.mmu.set_motor_speed(self.motor_speed)
         else:
-            self.is_moving = False
             self.mmu.set_motor_speed(0.0)
 
 class MMUControlPID(MMUControlBase):
@@ -453,7 +462,6 @@ class MMUControlPID(MMUControlBase):
 
 def load_config(config):
     return MultiMaterialUnit(config)
-
 
 def load_config_prefix(config):
     return MultiMaterialUnit(config)
