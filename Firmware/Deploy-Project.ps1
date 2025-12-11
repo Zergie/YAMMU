@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param()
-$klipper_url = "mkspi"
-$klipper_user = "mks"
+$klipper_url = "trident.local"
+$klipper_user = "biqu"
 $gcode = $(try { Get-Content $PSScriptRoot\startup.gcode -Encoding utf8 } catch { @() })
 
 #region Helper Functions

@@ -24,6 +24,8 @@ else:
 
 MMU_TOOL_NUM_START = 0
 MMU_LOADING_SPEED = 1.0
+MMU_LOADING_EXTRUDE_SPEED = 10.0
+MMU_LOADING_EXTRUDE_AMOUNT = 300.0
 MMU_HOMEING_SPEED = 0.7
 MMU_RETRACT_SPEED = 0.5
 MMU_RETRACT_TIME = 0.2
@@ -51,7 +53,7 @@ class MMUServo(PrinterServo):
         self.name = name
         self._servo = servo
 
-    def set_angle(self, angle: float, print_time: float | None = None) -> None:
+    def set_angle(self, angle: float, print_time: float = None) -> None:
         value = self._servo._get_pwm_from_angle(angle)
         if print_time is None:
             self._servo.gcrq.queue_gcode_request(value)
@@ -79,13 +81,20 @@ class MultiMaterialUnit:
         if self.tool_start < 0:
             raise config.error("tool_numbering_start must be at least 0")
         self.current_tool: int = None
+        self.mmu_enabled: bool = True
 
         ppins: PrinterPins = self.printer.lookup_object("pins")
 
-        # Filament Sensor
+        # Filament Sensors
         self.motion_queuing = self.printer.load_object(config, "motion_queuing")
-        self.endstop: MCU_endstop = ppins.setup_pin(
-            "endstop", config.get("endstop_pin")
+        self.gate_sensor: MCU_endstop = ppins.setup_pin(
+            "endstop", config.get("gate_pin")
+        )
+        self.extruder_sensor: MCU_endstop = ppins.setup_pin(
+            "endstop", config.get("extruder_pin")
+        )
+        self.toolhead_sensor: MCU_endstop = ppins.setup_pin(
+            "endstop", config.get("toolhead_pin")
         )
 
         # Belay Sensor Setup
@@ -96,6 +105,7 @@ class MultiMaterialUnit:
         self.be_setpoint = config.getfloat(
             "belay_setpoint", BELAY_SETPOINT, minval=0.0, maxval=1.0
         )
+
         # Setup control algorithm sub-class
         algos = {
             'watermark': MMUControlBangBang,
@@ -134,6 +144,14 @@ class MultiMaterialUnit:
             )
 
         # Gcode Command Registrations
+        def guard_command(func):
+            def guarded_command(gcmd: GCodeDispatch) -> None:
+                if not self.mmu_enabled:
+                    gcmd.respond_raw("MMU is disabled, command ignored.")
+                    return
+                func(gcmd)
+            return guarded_command
+
         for command in [
             x for x in dir(self) \
                 if x.startswith("cmd_") and callable(getattr(self, x))
@@ -142,31 +160,40 @@ class MultiMaterialUnit:
                 for tool in range(self.tool_start, self.tool_start + 8):
                     self.gcode.register_command(
                         f"T{tool}",
-                        self.cmd_TOOLCHANGE,
+                        guard_command(self.cmd_TOOLCHANGE),
                         desc=self.cmd_TOOLCHANGE_help.format(tool),
                     )
+            elif command == self.cmd_QUERY_MMU.__name__:
+                cmd = command[4:].upper()
+                fun = getattr(self, command)
+                desc = getattr(self, command + "_help")
+                self.gcode.register_command(cmd, fun, desc=desc)
             else:
                 cmd = "MMU_" + command[4:].upper()
-                fun = getattr(self, command)
+                if command in [self.cmd_ENABLE.__name__,
+                             self.cmd_DISABLE.__name__]:
+                    fun = getattr(self, command)
+                else:
+                    fun = guard_command(getattr(self, command))
                 desc = getattr(self, command + "_help")
                 self.gcode.register_command(cmd, fun, desc=desc)
 
     @property
-    def current_motor(self) -> BldcMotor | None:
+    def current_motor(self) -> BldcMotor:
         if self.current_tool is None:
             return None
         motor_index = (self.current_tool - self.tool_start) // 4
         return self.bldc_motors[motor_index]
 
     @property
-    def current_servo(self) -> MMUServo | None:
+    def current_servo(self) -> MMUServo:
         if self.current_tool is None:
             return None
         servo_index = (self.current_tool - self.tool_start) // 2
         return self.servos[servo_index]
 
     @property
-    def current_motor_direction(self) -> int | None:
+    def current_motor_direction(self) -> int:
         if self.current_tool is None:
             return None
         tool_offset = (self.current_tool - self.tool_start) % 2
@@ -184,6 +211,7 @@ class MultiMaterialUnit:
 
     def get_status(self, eventtime):
         return {
+            "enabled": self.mmu_enabled,
             "belay_active": self.be_active,
             "belay_setpoint": self.be_setpoint,
             "belay_control": {
@@ -199,13 +227,13 @@ class MultiMaterialUnit:
             "debug": self.debug,
         }
 
-    ######     ###    ##       ##       ########     ###     ######  ##     ##  ######
+     ######     ###    ##       ##       ########     ###     ######  ##     ##  ######
     ##    ##   ## ##   ##       ##       ##     ##   ## ##   ##    ## ##    ##  ##    ##
     ##        ##   ##  ##       ##       ##     ##  ##   ##  ##       ##   ##   ##
     ##       ##     ## ##       ##       ########  ##     ## ##       #####      ######
     ##       ######### ##       ##       ##     ## ######### ##       ##   ##         ##
     ##    ## ##     ## ##       ##       ##     ## ##     ## ##    ## ##    ##  ##    ##
-    ######  ##     ## ######## ######## ########  ##     ##  ######  ##     ##  ######
+     ######  ##     ## ######## ######## ########  ##     ##  ######  ##     ##  ######
     def handle_connect(self) -> None:
         self.toolhead: ToolHead = self.printer.lookup_object("toolhead")
         self.bldc_motors = [
@@ -236,8 +264,8 @@ class MultiMaterialUnit:
     ##    ##  ##       ##     ## ##     ## ##
     ##    ##  ##    ## ##     ## ##     ## ##
     ######    ######   #######  ########  ########
-    def select_tool(self, tool: int | None,
-                    print_time: float | None = None) -> None:
+    def select_tool(self, tool: int,
+                    print_time: float = None) -> None:
         servo_index = None if tool is None else (tool - MMU_TOOL_NUM_START) // 2
 
         for i, servo in [x for x in enumerate(self.servos) \
@@ -255,35 +283,56 @@ class MultiMaterialUnit:
 
         self.current_tool = tool
 
-    def unload_tool(self, gcmd: GCodeDispatch, tool: int | None = None) -> None:
-        if self.endstop.query_endstop(self.print_time) == 1:
+    def unload_tool(self, gcmd: GCodeDispatch, tool: int = None) -> None:
+        if self.gate_sensor.query_endstop(self.print_time) == 1:
             if self.current_tool is None:
                 gcmd.respond_info(
                     "Unknown filament loaded, please unload MANUALLY..")
-                self.move(0.0, False, TIMEOUT_1H)
+                self.move_to_gate(0.0, False, TIMEOUT_1H)
             elif tool is None or self.current_tool != tool:
                 gcmd.respond_info(f"Unloading tool {self.current_tool}..")
-                self.move(-MMU_LOADING_SPEED, False, TIMEOUT_LOADING)
+                self.move_to_gate(-MMU_LOADING_SPEED, False, TIMEOUT_LOADING)
 
-    def move(self, speed: float, trigger: bool, timeout: float) -> None:
-        endstop_value = 1 if trigger else 0
+    def move_to_gate(self, speed: float, trigger: bool, timeout: float) -> None:
+        return self._move_to_sensor(speed, trigger, timeout,
+                                    self.gate_sensor, "gate")
+
+    def move_to_extruder(self, speed: float, trigger: bool,
+                         timeout: float) -> None:
+        return self._move_to_sensor(speed, trigger, timeout,
+                                   self.extruder_sensor, "extruder")
+
+    def move_to_toolhead(self, speed: float, trigger: bool,
+                         timeout: float) -> None:
+        return self._move_to_sensor(speed, trigger, timeout,
+                                   self.toolhead_sensor, "toolhead")
+
+    def _move_to_sensor(self, speed: float, trigger: bool, timeout: float,
+                       sensor: MCU_endstop, sensor_name: str) -> None:
+        gate_value = 1 if trigger else 0
         move_start_time = self.print_time
 
         self.set_motor_speed(speed)
 
         print_time = self.print_time
-        while self.endstop.query_endstop(print_time) != endstop_value:
+        while sensor.query_endstop(print_time) != gate_value:
             self.toolhead.dwell(ENDSTOP_SAMPLE_TIME)
             if (print_time - move_start_time) > timeout:
                 self.set_motor_speed(0.0)
+                self.select_tool(None)
                 raise self.gcode.error(
-                    "MMU move timeout: endstop not triggered")
+                    f"MMU move timeout: {sensor_name} sensor not triggered")
             print_time = self.print_time
 
         self.set_motor_speed(0.0)
 
+
     cmd_TOOLCHANGE_help = "Change to tool {0}"
     def cmd_TOOLCHANGE(self, gcmd: GCodeDispatch) -> None:
+        if not self.mmu_enabled:
+            gcmd.respond_info("MMU is disabled, tool change ignored.")
+            return
+
         tool = int(gcmd.get_command()[1:])
         if tool < self.tool_start:
             raise gcmd.error(f"Tool number must be at least {self.tool_start}")
@@ -299,12 +348,58 @@ class MultiMaterialUnit:
         if self.current_tool is None or self.current_tool != tool:
             gcmd.respond_info(f"Loading tool {tool}..")
             self.select_tool(tool, self.print_time)
-            self.move(MMU_LOADING_SPEED, True, TIMEOUT_LOADING)
-            gcmd.respond_info(f"Tool {tool} loaded.")
+            self.move_to_gate(MMU_HOMEING_SPEED, True, TIMEOUT_HOMEING / 2)
+            gcmd.respond_info(f"Tool {tool} at gate.")
+            self.move_to_extruder(MMU_LOADING_SPEED, True, TIMEOUT_LOADING)
+            gcmd.respond_info(f"Tool {tool} at extruder.")
+            self.be_active = True
+            extruder_position = self.toolhead.get_position()[3]
+            self.toolhead.move(extruder_position + MMU_LOADING_EXTRUDE_AMOUNT,
+                               MMU_LOADING_EXTRUDE_SPEED)
+            if self.toolhead_sensor.query_endstop(self.print_time) == 1:
+                gcmd.respond_info(f"Tool {tool} loaded.")
+            else:
+                gcmd.error(
+                    "Toolhead sensor NOT triggered." +
+                    f"Tool {tool} may not be fully loaded, " +
+                    "please check filament path."
+                )
         else:
-            gcmd.respond_info(f"Tool {tool} already load.")
+            gcmd.respond_info(f"Tool {tool} already loaded.")
 
         self.be_active = True
+
+    cmd_QUERY_MMU_help = "Report on the status of the MMU"
+    def cmd_QUERY_MMU(self, gcmd: GCodeDispatch) -> None:
+        states = ('open','TRIGGERED')
+
+        msg = {
+            sensor: states[endstop.query_endstop(self.print_time)]
+            for sensor, endstop in (
+                ("gate_sensor", self.gate_sensor),
+                ("extruder_sensor", self.extruder_sensor),
+                ("toolhead_sensor", self.toolhead_sensor),
+            )
+        }
+
+        gcmd.respond_raw(" ".join([ f"{k}:{v}" for k, v in msg.items() ]))
+
+    cmd_ENABLE_help = "Enables the MMU system."
+    def cmd_ENABLE(self, gcmd: GCodeDispatch) -> None:
+        if self.mmu_enabled:
+            gcmd.respond_info("MMU already enabled.")
+        else:
+            self.mmu_enabled = True
+            gcmd.respond_info("MMU enabled.")
+
+    cmd_DISABLE_help = "Disables the MMU system."
+    def cmd_DISABLE(self, gcmd: GCodeDispatch) -> None:
+        if not self.mmu_enabled:
+            gcmd.respond_info("MMU already disabled.")
+        else:
+            self.mmu_enabled = False
+            self.select_tool(None)
+            gcmd.respond_info("MMU disabled.")
 
     cmd_HOME_help = "Homes the specified tool."
     def cmd_HOME(self, gcmd: GCodeDispatch) -> None:
@@ -324,11 +419,11 @@ class MultiMaterialUnit:
         # Select tool to home
         self.select_tool(tool, self.print_time)
 
-        # Move tool in front of endstop
+        # Move tool in front of gate sensor
         timeout = TIMEOUT_HOMEING / 2
         gcmd.respond_info(f"Homeing tool {tool}..")
-        self.move(MMU_HOMEING_SPEED, True, timeout)
-        self.move(-MMU_HOMEING_SPEED, False, timeout)
+        self.move_to_gate(MMU_HOMEING_SPEED, True, timeout)
+        self.move_to_gate(-MMU_HOMEING_SPEED, False, timeout)
 
         # Retract tool extra
         self.set_motor_speed(-MMU_RETRACT_SPEED)
@@ -387,6 +482,22 @@ class MultiMaterialUnit:
     def cmd_DISENGAGE(self, gcmd: GCodeDispatch) -> None:
         self.be_active = False
         self.select_tool(None)
+
+    cmd_TEST_help = "Run MMU test sequence."
+    def cmd_TEST(self, gcmd: GCodeDispatch) -> None:
+        tool = 99
+
+        position = self.toolhead.get_position()
+        position[3] += MMU_LOADING_EXTRUDE_AMOUNT
+        self.toolhead.move(position, MMU_LOADING_EXTRUDE_SPEED)
+        if self.toolhead_sensor.query_endstop(self.print_time) == 1:
+            gcmd.respond_info(f"Tool {tool} loaded.")
+        else:
+            gcmd.error(
+                "Toolhead sensor NOT triggered." +
+                f"Tool {tool} may not be fully loaded, " +
+                "please check filament path."
+            )
 
 
 class MMUControlBangBang(MMUControlBase):

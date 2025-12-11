@@ -147,7 +147,7 @@ class BldcMotor:
     def speed(self) -> float:
         return self.last_value
 
-    def set_speed(self, value: float, print_time: float | None = None):
+    def set_speed(self, value: float, print_time: float = None):
         if print_time is None:
             min_sched_time = self.mcu.min_schedule_time()
             systime = self.printer.get_reactor().monotonic()
