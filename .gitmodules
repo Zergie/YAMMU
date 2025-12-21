@@ -1,3 +1,6 @@
 [submodule "FusionAddons/FusionHeadless"]
 	path = FusionAddons/FusionHeadless
 	url = https://github.com/Zergie/FusionHeadless
+[submodule "Firmware/Happy-Hare"]
+	path = Firmware/Happy-Hare
+	url = https://github.com/Zergie/Happy-Hare

@@ -31,23 +31,31 @@ function Invoke-SSH {
         exit 1
     }
 }
-
 #endregion
 
 ➡️ "Installing on ${klipper_url}"
-Invoke-SCP $PSScriptRoot\*.py ${klipper_user}@${klipper_url}:klipper/klippy/extras/
-Invoke-SCP $PSScriptRoot\mmu.cfg ${klipper_user}@${klipper_url}:printer_data/config/mmu.cfg
+Invoke-SSH ${klipper_user}@${klipper_url} `
+    mkdir -p klipper/klippy/extras/mmu
+Invoke-SCP $PSScriptRoot\Happy-Hare\extras\*.py `
+    ${klipper_user}@${klipper_url}:klipper/klippy/extras/
+Invoke-SCP $PSScriptRoot\Happy-Hare\extras\mmu\*.py `
+    ${klipper_user}@${klipper_url}:klipper/klippy/extras/mmu/
+Invoke-SCP $PSScriptRoot\mmu\base\*.cfg `
+    ${klipper_user}@${klipper_url}:printer_data/config/mmu/base
 
 ➡️➡️ "Clearing klippy log on ${klipper_url} "
-Invoke-SSH ${klipper_user}@${klipper_url} touch printer_data/logs/klippy.log
+Invoke-SSH ${klipper_user}@${klipper_url} `
+    touch printer_data/logs/klippy.log
 Write-Host -ForegroundColor Cyan -NoNewline "."
-Invoke-SSH ${klipper_user}@${klipper_url} rm printer_data/logs/klippy.log
+Invoke-SSH ${klipper_user}@${klipper_url} `
+    rm printer_data/logs/klippy.log
 🟢 " ok"
 
 ➡️➡️ "Restarting klipper on ${klipper_url} "
 Invoke-SSH ${klipper_user}@${klipper_url} systemctl restart klipper
 
 $finished = $false
+$restart_count = 0
 $firmware_restart_count = 0
 0..30 | ForEach-Object {
     if (!$finished) {
@@ -63,29 +71,42 @@ $firmware_restart_count = 0
                 🔴 "$($response.result.state_message.Trim())"
                 🔴 ""
 
-                if ($response.result.state -in @("error", "shutdown") -and $response.result.state_message -like '*"FIRMWARE_RESTART"*') {
-                    if ($firmware_restart_count -lt 1) {
-                        ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
-                        $firmware_restart_count += 1
-                        Invoke-RestMethod `
-                            -Method Post `
-                            -Uri "http://${klipper_url}:7125/printer/gcode/script?script=FIRMWARE_RESTART" `
-                            -SkipHttpErrorCheck `
-                            -ErrorAction SilentlyContinue | Out-Null
+                if ($response.result.state -in @("error", "shutdown")) {
+                    if ($response.result.state_message -like '*"FIRMWARE_RESTART"*') {
+                        if ($firmware_restart_count -lt 1) {
+                            ➡️➡️ "Firmware restart detected, waiting for klipper to recover "
+                            $firmware_restart_count += 1
+                            Invoke-RestMethod `
+                                -Method Post `
+                                -Uri "http://${klipper_url}:7125/printer/gcode/script?script=FIRMWARE_RESTART" `
+                                -SkipHttpErrorCheck `
+                                -ErrorAction SilentlyContinue | Out-Null
 
-                        $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
-                        if ($response -and $response.result.state -eq "ready") {
-                            🟢 " $($response.result.state)"
-                            $finished = $true
-                        } else {
+                            $response = Invoke-RestMethod -Uri http://${klipper_url}:7125/printer/info -TimeoutSec 1
+                            if ($response -and $response.result.state -eq "ready") {
+                                🟢 " $($response.result.state)"
+                                $finished = $true
+                            } else {
+                                🔴 " $($response.result.state) "
+                            }
+                        }
+                        else {
                             🔴 " $($response.result.state) "
+                            ssh ${klipper_user}@${klipper_url} "cat printer_data/logs/klippy.log" |
+                                Select-String "Traceback" -Context 5,20 |
+                                Select-Object -First 1
+                            exit 1
                         }
                     }
+                    elseif ($restart_count -lt 2) {
+                        ➡️➡️ "Attempting klipper restart "
+                        $restart_count += 1
+                    }
                     else {
-                        🔴 " $($response.result.state) "
+                        🔴 " Maximum restart attempts reached "
                         ssh ${klipper_user}@${klipper_url} "cat printer_data/logs/klippy.log" |
-                            Select-String "Traceback" -Context 5,20 |
-                            Select-Object -First 1
+                                Select-String "Traceback" -Context 5,20 |
+                                Select-Object -First 1
                         exit 1
                     }
                 }
@@ -99,7 +120,6 @@ $firmware_restart_count = 0
 if (!$finished) {
     🔴 " Timeout: $($response.result.state)"
     🔴 ""
-    # ssh mks@10.0.0.17 "cat printer_data/logs/klippy.log | sed -n '/=======================/,`$p'"
     exit 1
 }
 
@@ -131,9 +151,6 @@ $gcode |
             🔵 $_
         }
     }
-
-(Invoke-RestMethod "http://${klipper_url}:7125/printer/objects/query?multi_material_unit").result.status |
-        ForEach-Object multi_material_unit
 
 # ➡️ "Tailing klippy log on ${klipper_url} "
 # ssh ${klipper_user}@${klipper_url} tail -f printer_data/logs/klippy.log
