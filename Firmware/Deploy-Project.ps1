@@ -13,6 +13,7 @@ function 🟢 () { Write-Host -ForegroundColor Green $args }
 function 🔵 () { Write-Host -ForegroundColor Blue $args }
 
 function Invoke-SCP {
+    Write-Verbose "scp $args"
     $p = Start-Process -NoNewWindow -PassThru -FilePath "scp" -ArgumentList $args
     $p.WaitForExit()
     if ($p.ExitCode -ne 0) {
@@ -22,7 +23,8 @@ function Invoke-SCP {
     }
 }
 
-function Invoke-SSH {
+function Invoke-SSH2 {
+    Write-Verbose "ssh $args"
     $p = Start-Process -NoNewWindow -PassThru -FilePath "ssh" -ArgumentList $args
     $p.WaitForExit()
     if ($p.ExitCode -ne 0) {
@@ -34,25 +36,30 @@ function Invoke-SSH {
 #endregion
 
 ➡️ "Installing on ${klipper_url}"
-Invoke-SSH ${klipper_user}@${klipper_url} `
-    mkdir -p klipper/klippy/extras/mmu
 Invoke-SCP $PSScriptRoot\Happy-Hare\extras\*.py `
     ${klipper_user}@${klipper_url}:klipper/klippy/extras/
+
+Invoke-SSH2 ${klipper_user}@${klipper_url} `
+    mkdir -p klipper/klippy/extras/mmu
 Invoke-SCP $PSScriptRoot\Happy-Hare\extras\mmu\*.py `
     ${klipper_user}@${klipper_url}:klipper/klippy/extras/mmu/
+
+Invoke-SSH2 ${klipper_user}@${klipper_url} `
+    mkdir -p printer_data/config/mmu/base
 Invoke-SCP $PSScriptRoot\mmu\base\*.cfg `
     ${klipper_user}@${klipper_url}:printer_data/config/mmu/base
 
+
 ➡️➡️ "Clearing klippy log on ${klipper_url} "
-Invoke-SSH ${klipper_user}@${klipper_url} `
+Invoke-SSH2 ${klipper_user}@${klipper_url} `
     touch printer_data/logs/klippy.log
 Write-Host -ForegroundColor Cyan -NoNewline "."
-Invoke-SSH ${klipper_user}@${klipper_url} `
+Invoke-SSH2 ${klipper_user}@${klipper_url} `
     rm printer_data/logs/klippy.log
 🟢 " ok"
 
 ➡️➡️ "Restarting klipper on ${klipper_url} "
-Invoke-SSH ${klipper_user}@${klipper_url} systemctl restart klipper
+Invoke-SSH2 ${klipper_user}@${klipper_url} systemctl restart klipper
 
 $finished = $false
 $restart_count = 0
