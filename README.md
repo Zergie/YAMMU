@@ -1,4 +1,5 @@
  <!--![GitHub Release](https://img.shields.io/github/v/release/Zergie/YAMMU)-->
+[![Discord Shield](https://discord.com/api/guilds/1461823136172609548/widget.png?style=shield)](https://discord.gg/QSjW5CMHZC)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Zergie/YAMMU)
 ![GitHub Repo stars](https://img.shields.io/github/stars/Zergie/YAMMU)
 
@@ -8,6 +9,8 @@
 A Multi-Material Unit (MMU) for eight filaments that can also function as a filament dryer, keeping them dry while printing. The design is heavily inspired by Voron and their printers.
 
 <img src="Images/render_1.png" width="400px"></img>
+
+
 
 # Introduction
 Currently, this project aims to support loading and unloading filament before a print begins. While it is technically possible to use this version for multi-color or multi-material prints, this is not our focus at the moment. We plan to support both options in the future, once we have a reliable working prototype.
