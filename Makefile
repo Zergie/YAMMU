@@ -24,13 +24,13 @@ images: \
 	Images/render_cw2.png
 
 
- ######  ######## ######## ##     ## ########  
-##    ## ##          ##    ##     ## ##     ## 
-##       ##          ##    ##     ## ##     ## 
- ######  ######      ##    ##     ## ########  
-      ## ##          ##    ##     ## ##        
-##    ## ##          ##    ##     ## ##        
- ######  ########    ##     #######  ##        
+ ######  ######## ######## ##     ## ########
+##    ## ##          ##    ##     ## ##     ##
+##       ##          ##    ##     ## ##     ##
+ ######  ######      ##    ##     ## ########
+      ## ##          ##    ##     ## ##
+##    ## ##          ##    ##     ## ##
+ ######  ########    ##     #######  ##
 
 FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py: FusionAddons/FusionHeadless/requirements.txt FusionAddons/FusionHeadless/Makefile
 	cd FusionAddons/FusionHeadless && make && cd ../.. && touch $@
@@ -44,17 +44,17 @@ update_assembly:
 	make -B obj/Assembly.json
 
 
- ######  ######## ##        ######  
-##    ##    ##    ##       ##    ## 
-##          ##    ##       ##       
- ######     ##    ##        ######  
-      ##    ##    ##             ## 
-##    ##    ##    ##       ##    ## 
- ######     ##    ########  ######  
+ ######  ######## ##        ######
+##    ##    ##    ##       ##    ##
+##          ##    ##       ##
+ ######     ##    ##        ######
+      ##    ##    ##             ##
+##    ##    ##    ##       ##    ##
+ ######     ##    ########  ######
 
 obj/components.json: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
-	$(SEND) --get /components --jmespath "result" --output $@
+	$(SEND) --get /components --jmespath "result" --timeout 120 --output $@
 
 obj/components.printed.json: obj/components.json
 	$(SEND) --file $< --match-with-files "STLs" --base-material "ABS Plastic (Voron Black)" --accent-material "ABS Plastic (Voron Red)" --output $@ && \
@@ -85,13 +85,13 @@ obj/STLs/%.stl: obj/STLs/%.json
 	rm -f $(basename $@).1.stl
 
 
-########   #######  ##     ## 
-##     ## ##     ## ###   ### 
-##     ## ##     ## #### #### 
-########  ##     ## ## ### ## 
-##     ## ##     ## ##     ## 
-##     ## ##     ## ##     ## 
-########   #######  ##     ## 
+########   #######  ##     ##
+##     ## ##     ## ###   ###
+##     ## ##     ## #### ####
+########  ##     ## ## ### ##
+##     ## ##     ## ##     ##
+##     ## ##     ## ##     ##
+########   #######  ##     ##
 
 BOM.md: obj/bom.json
 	$(VPYTHON) -c "\
@@ -148,16 +148,16 @@ obj/bom.categorized.json: obj/components.notprinted.json
 obj/components.notprinted.json: obj/components.json
 	$(SEND) --file $< \
 		--jmespath "values(@)[?bodies[?material != 'ABS Plastic (Voron Black)' && material != 'ABS Plastic (Voron Red)']].{name: name, material: material, count: count}" \
-		--output $@	
+		--output $@
 
 
- ######     ###    ########  
-##    ##   ## ##   ##     ## 
-##        ##   ##  ##     ## 
-##       ##     ## ##     ## 
-##       ######### ##     ## 
-##    ## ##     ## ##     ## 
- ######  ##     ## ########  
+ ######     ###    ########
+##    ##   ## ##   ##     ##
+##        ##   ##  ##     ##
+##       ##     ## ##     ##
+##       ######### ##     ##
+##    ## ##     ## ##     ##
+ ######  ##     ## ########
 
 obj/Assembly.step: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
@@ -172,29 +172,29 @@ CAD/Assembly.zip: obj/Assembly.step
 	cd obj && \
 	zip Assembly.zip Assembly.step && \
 	cd .. && \
-	mv --force obj/Assembly.zip $@ 
+	mv --force obj/Assembly.zip $@
 
 
-##     ##    ###    ##    ## ##     ##    ###    ##       
-###   ###   ## ##   ###   ## ##     ##   ## ##   ##       
-#### ####  ##   ##  ####  ## ##     ##  ##   ##  ##       
-## ### ## ##     ## ## ## ## ##     ## ##     ## ##       
-##     ## ######### ##  #### ##     ## ######### ##       
-##     ## ##     ## ##   ### ##     ## ##     ## ##       
-##     ## ##     ## ##    ##  #######  ##     ## ######## 
+##     ##    ###    ##    ## ##     ##    ###    ##
+###   ###   ## ##   ###   ## ##     ##   ## ##   ##
+#### ####  ##   ##  ####  ## ##     ##  ##   ##  ##
+## ### ## ##     ## ## ## ## ##     ## ##     ## ##
+##     ## ######### ##  #### ##     ## ######### ##
+##     ## ##     ## ##   ### ##     ## ##     ## ##
+##     ## ##     ## ##    ##  #######  ##     ## ########
 
 Manual/Assembly.pdf: Manual/Assembly.odp
 	mkdir -p $(dir $@) && \
 	soffice --headless --convert-to pdf:writer_pdf_Export $< --outdir Manual/
 
 
-#### ##     ##    ###     ######   ########  ######  
- ##  ###   ###   ## ##   ##    ##  ##       ##    ## 
- ##  #### ####  ##   ##  ##        ##       ##       
- ##  ## ### ## ##     ## ##   #### ######    ######  
- ##  ##     ## ######### ##    ##  ##             ## 
- ##  ##     ## ##     ## ##    ##  ##       ##    ## 
-#### ##     ## ##     ##  ######   ########  ######  
+#### ##     ##    ###     ######   ########  ######
+ ##  ###   ###   ## ##   ##    ##  ##       ##    ##
+ ##  #### ####  ##   ##  ##        ##       ##
+ ##  ## ### ## ##     ## ##   #### ######    ######
+ ##  ##     ## ######### ##    ##  ##             ##
+ ##  ##     ## ##     ## ##    ##  ##       ##    ##
+#### ##     ## ##     ##  ######   ########  ######
 
 Images/render_1.png: obj/Assembly.json
 	mkdir -p $(dir $@) && \
@@ -256,13 +256,13 @@ Images/render_cw2.png: obj/Assembly.json
 		--output $@
 
 
- ######  ##       ########    ###    ##    ## 
-##    ## ##       ##         ## ##   ###   ## 
-##       ##       ##        ##   ##  ####  ## 
-##       ##       ######   ##     ## ## ## ## 
-##       ##       ##       ######### ##  #### 
-##    ## ##       ##       ##     ## ##   ### 
- ######  ######## ######## ##     ## ##    ## 
+ ######  ##       ########    ###    ##    ##
+##    ## ##       ##         ## ##   ###   ##
+##       ##       ##        ##   ##  ####  ##
+##       ##       ######   ##     ## ## ## ##
+##       ##       ##       ######### ##  ####
+##    ## ##       ##       ##     ## ##   ###
+ ######  ######## ######## ##     ## ##    ##
 
 clean:
 	cd FusionAddons/FusionHeadless && make clean && cd ../..
