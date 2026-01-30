@@ -10,7 +10,6 @@ all: \
 	FusionAddons/FusionHeadless/.venv/lib64/python3.12/site-packages/pygments/__init__.py \
 	update_assembly \
 	obj/STLs \
-	CAD/Assembly.f3d \
 	CAD/Assembly.zip \
 	Manual/Assembly.pdf
 
@@ -162,10 +161,6 @@ obj/components.notprinted.json: obj/components.json
 obj/Assembly.step: obj/Assembly.json
 	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
 	$(SEND) --get /export --data '{"format": "step"}' --output $@
-
-CAD/Assembly.f3d: obj/Assembly.json
-	$(SEND) --get /document --data '{"open": "'"$(ASSEMBLY_ID)"'"}' && \
-	$(SEND) --get /export --data '{"format": "f3d"}' --output $@
 
 CAD/Assembly.zip: obj/Assembly.step
 	mkdir -p $(dir $@) && \
